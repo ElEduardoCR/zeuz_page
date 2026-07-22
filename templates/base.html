@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}ZEUZ DNC — Tu taller conectado{% endblock %}</title>
+  <meta name="description" content="{% block description %}ZEUZ DNC conecta tu taller CNC: kits Raspberry Pi, app iOS, cables y adaptadores RS232 listos para trabajar.{% endblock %}" />
+  <meta name="theme-color" content="#07111f" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/shop.css') }}" />
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a href="{{ url_for('index') }}" class="brand">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="ZEUZ DNC" class="brand__logo" />
+        <div class="brand__text">
+          <span class="brand__name">ZEUZ DNC</span>
+          <span class="brand__tag">Tecnología para CNC</span>
+        </div>
+      </a>
+      <nav class="nav">
+        <a href="{{ url_for('index') }}">Inicio</a>
+        <a href="{{ url_for('catalog_page') }}">Catálogo</a>
+        <a href="{{ url_for('index') }}#soluciones">Soluciones</a>
+        <a href="{{ url_for('index') }}#como-funciona">Cómo funciona</a>
+        <a href="{{ url_for('index') }}#contacto">Contacto</a>
+      </nav>
+      <a href="{{ url_for('cart_page') }}" class="cart-btn" aria-label="Carrito">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 4h2l2 12h11l2-8H6" />
+          <circle cx="9" cy="20" r="1.5" />
+          <circle cx="17" cy="20" r="1.5" />
+        </svg>
+        <span class="cart-btn__count" id="cart-count">0</span>
+      </a>
+    </div>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer" id="contacto">
+    <div class="footer__inner">
+      <div class="footer__col">
+        <div class="footer__brand">ZEUZ DNC</div>
+        <p>La forma simple de llevar programas CNC del teléfono o la red del taller hasta tu máquina.</p>
+      </div>
+      <div class="footer__col">
+        <div class="footer__title">Navegación</div>
+        <a href="{{ url_for('index') }}">Inicio</a>
+        <a href="{{ url_for('catalog_page') }}">Catálogo</a>
+        <a href="{{ url_for('cart_page') }}">Carrito</a>
+      </div>
+      <div class="footer__col">
+        <div class="footer__title">Soporte</div>
+        <a href="mailto:hola@zeus-dnc.com">hola@zeus-dnc.com</a>
+        <a href="https://github.com/ElEduardoCR" target="_blank" rel="noopener">GitHub</a>
+        <a href="{{ url_for('index') }}#preguntas">Preguntas frecuentes</a>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>© {{ now_year() if now_year is defined else '2026' }} ZEUZ DNC · By Voxa</span>
+      <span>Hecho en México 🇲🇽</span>
+    </div>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+  <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/shop.js') }}"></script>
+</body>
+</html>

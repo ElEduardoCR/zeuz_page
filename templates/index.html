@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+  <img class="hero__photo" src="{{ url_for('static', filename='img/zeuzdnc-workshop-operator.jpg') }}" alt="Operador ficticio usando ZEUZ DNC en una estación CNC" />
+  <div class="hero__shade"></div>
+  <div class="hero__inner">
+    <div class="hero__copy">
+      <span class="hero__eyebrow">DNC moderno · Raspberry Pi + iPhone</span>
+      <h1 class="hero__title">Tu programa.<br /><span class="accent">Tu máquina.</span><br />Sin rodeos.</h1>
+      <p class="hero__lede">Envía G-code a controles CNC por RS232 desde una estación táctil ZEUZ DNC o desde tu iPhone con iZEUZ. Sin correr memorias USB por el taller.</p>
+      <div class="hero__cta">
+        <a href="{{ url_for('catalog_page') }}" class="btn btn--primary btn--lg">Comprar ZEUZ</a>
+        <a href="#soluciones" class="btn btn--glass btn--lg">Conocer el sistema</a>
+      </div>
+      <div class="hero__proof" aria-label="Beneficios principales">
+        <span><strong>10 min</strong> para comenzar</span>
+        <span><strong>RS232</strong> listo para CNC</span>
+        <span><strong>Envío</strong> gratis en México</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="trust-strip" aria-label="Compatibilidad">
+  <div class="container trust-strip__inner">
+    <span>Compatible con</span><strong>FANUC</strong><strong>FADAL</strong><strong>HAAS</strong><strong>SIEMENS</strong><strong>RS232</strong>
+  </div>
+</section>
+
+<section class="solutions" id="soluciones">
+  <div class="container">
+    <div class="section-kicker">Dos formas de trabajar. Un mismo flujo.</div>
+    <h2 class="section-title">ZEUZ en la máquina. <span class="accent">iZEUZ en tu bolsillo.</span></h2>
+    <div class="solutions__grid">
+      <article class="solution-card solution-card--pi">
+        <div class="solution-card__content">
+          <span class="solution-card__label">Estación táctil</span>
+          <h3>ZEUZ DNC</h3>
+          <p>Explora carpetas, edita G-code y envía a la máquina desde una Raspberry Pi dedicada. La interfaz permanece local en el taller.</p>
+          <ul class="check-list"><li>Editor con búsqueda y reemplazo</li><li>Perfiles seriales por máquina</li><li>Estado y progreso de transferencia</li></ul>
+          <a href="{{ url_for('product_page', product_id='kit-pi4') }}" class="link-arrow">Ver kit Raspberry Pi →</a>
+        </div>
+        <div class="mini-ui mini-ui--desktop" aria-label="Representación de la interfaz ZEUZ DNC">
+          <div class="mini-ui__bar"><span>ZEUZ DNC</span><i></i></div>
+          <div class="mini-ui__cols"><div><b>Programas</b><span>O1001.NC</span><span>PIEZA_A.NC</span><span>TORNO_04.NC</span></div><div><b>Editor</b><code>N10 G90 G54</code><code>N20 G00 X0 Y0</code><code>N30 M03 S1200</code></div><div><b>Envío</b><span>Fanuc 0i</span><span>USB · RS232</span><button>ENVIAR</button></div></div>
+        </div>
+      </article>
+
+      <article class="solution-card solution-card--ios">
+        <img src="{{ url_for('static', filename='img/izeuz-mobile-engineer.jpg') }}" alt="Ingeniera ficticia usando iZEUZ en iPhone junto a un torno CNC" loading="lazy" />
+        <div class="solution-card__overlay"></div>
+        <div class="solution-card__content">
+          <span class="solution-card__label">App para iPhone y iPad</span>
+          <h3>iZEUZ</h3>
+          <p>Elige y edita programas desde iOS. La orden viaja por Wi‑Fi al puente ZEUZ DNC y la Raspberry Pi hace la salida serial.</p>
+          <p class="solution-card__note">No requiere conectar un adaptador USB‑RS232 genérico al iPhone.</p>
+          <a href="#como-funciona" class="link-arrow">Ver cómo se conecta →</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="features">
+  <div class="container">
+    <div class="section-kicker">Hecho para el piso de producción</div>
+    <h2 class="section-title">Menos fricción. <span class="accent">Más piezas.</span></h2>
+    <div class="features__grid">
+      <article class="feature">
+        <h3>Listo en 10 minutos</h3>
+        <p>La microSD llega preparada. Conecta red, pantalla y cable serial para comenzar.</p>
+      </article>
+      <article class="feature">
+        <h3>Control a la vista</h3>
+        <p>Archivo, máquina, puerto y progreso permanecen visibles antes de enviar.</p>
+      </article>
+      <article class="feature">
+        <h3>Configurable por máquina</h3>
+        <p>Baudrate, paridad, bits, flujo y terminador guardados en cada perfil.</p>
+      </article>
+      <article class="feature">
+        <h3>Envío consciente</h3>
+        <p>Nunca transmite solo: archivo guardado, máquina elegida y confirmación manual.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="featured">
+  <div class="container">
+    <div class="featured__head">
+      <div><div class="section-kicker section-kicker--left">Arma tu conexión</div><h2 class="section-title">Lo más <span class="accent">pedido</span></h2></div>
+      <a href="{{ url_for('catalog_page') }}" class="link-arrow">Ver todo →</a>
+    </div>
+    <div class="products-grid">
+      {% for p in products %}
+        {% include "_product_card.html" %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="howto" id="como-funciona">
+  <div class="container">
+    <div class="section-kicker">De tu carpeta al control CNC</div>
+    <h2 class="section-title">Cuatro pasos. <span class="accent">Cero vueltas.</span></h2>
+    <ol class="howto__steps">
+      <li>
+        <span class="howto__num">1</span>
+        <h3>Conecta</h3>
+        <p>Conecta la Raspberry Pi a tu red y el adaptador RS232 al control CNC.</p>
+      </li>
+      <li>
+        <span class="howto__num">2</span>
+        <h3>Carga</h3>
+        <p>Guarda tus archivos NC desde Windows o Mac en la carpeta compartida.</p>
+      </li>
+      <li>
+        <span class="howto__num">3</span>
+        <h3>Elige</h3>
+        <p>Selecciona el programa en ZEUZ DNC o iZEUZ y confirma el perfil de máquina.</p>
+      </li>
+      <li>
+        <span class="howto__num">4</span>
+        <h3>Envía</h3>
+        <p>Presiona <strong>ENVIAR</strong>. La Pi transmite con la configuración serial correcta.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="faq" id="preguntas">
+  <div class="container container--narrow">
+    <h2 class="section-title">Preguntas <span class="accent">frecuentes</span></h2>
+    <details class="faq__item">
+      <summary>¿Necesito conocimientos técnicos?</summary>
+      <p>No. El kit llega preparado y con guía de inicio. Solo necesitas conocer la configuración serial que usa tu control CNC.</p>
+    </details>
+    <details class="faq__item">
+      <summary>¿Funciona con mi control CNC?</summary>
+      <p>Funciona con controles que reciban programas por RS232. Los valores de fábrica son una referencia: confirma baudrate, paridad y flujo en el manual de tu máquina.</p>
+    </details>
+    <details class="faq__item">
+      <summary>¿El iPhone se conecta directo al cable RS232?</summary>
+      <p>No con adaptadores USB‑RS232 genéricos. iZEUZ se comunica por Wi‑Fi con ZEUZ DNC en la Raspberry Pi, y ella transmite al puerto serial.</p>
+    </details>
+    <details class="faq__item">
+      <summary>¿Cuánto tarda el envío?</summary>
+      <p>Envío gratuito a todo México. Tarda entre 3 y 7 días hábiles dependiendo de tu ciudad. Te mandamos número de rastreo.</p>
+    </details>
+    <details class="faq__item">
+      <summary>¿Aceptan factura?</summary>
+      <p>Sí, facturamos. Mándanos tus datos fiscales después de la compra y te emitimos la factura en menos de 48 horas.</p>
+    </details>
+  </div>
+</section>
+
+<section class="final-cta">
+  <div class="container final-cta__inner">
+    <div><div class="section-kicker section-kicker--left">Actualiza tu flujo DNC</div><h2>Todo lo que necesitas para volver a producir.</h2><p>Kits listos, microSD configurada, adaptadores FTDI y cables seriales para tu instalación.</p></div>
+    <a href="{{ url_for('catalog_page') }}" class="btn btn--primary btn--lg">Ver catálogo completo</a>
+  </div>
+</section>
+{% endblock %}

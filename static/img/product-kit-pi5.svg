@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <defs>
+    <linearGradient id="bg5" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0A1428"/>
+      <stop offset="100%" stop-color="#050A1A"/>
+    </linearGradient>
+    <linearGradient id="cyan5" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#00BFFF"/>
+      <stop offset="100%" stop-color="#29B6F6"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="url(#bg5)"/>
+  <g transform="translate(200,150)">
+    <rect x="-100" y="-60" width="200" height="120" rx="10" fill="#0F1B36" stroke="url(#cyan5)" stroke-width="2.5"/>
+    <rect x="-80" y="-40" width="60" height="60" rx="6" fill="#1a2a4a" stroke="#00BFFF" stroke-width="1.5"/>
+    <text x="-50" y="0" text-anchor="middle" fill="#00BFFF" font-family="monospace" font-size="12" font-weight="bold">CPU</text>
+    <rect x="-10" y="-40" width="25" height="12" rx="2" fill="#00BFFF"/>
+    <rect x="20" y="-40" width="25" height="12" rx="2" fill="#00BFFF"/>
+    <rect x="60" y="-40" width="35" height="25" rx="3" fill="#0F1B36" stroke="#00BFFF" stroke-width="1.2"/>
+    <circle cx="-75" cy="40" r="3.5" fill="#00BFFF"/>
+    <circle cx="-60" cy="40" r="3.5" fill="#00BFFF"/>
+    <circle cx="75" cy="40" r="3.5" fill="#00BFFF"/>
+    <circle cx="90" cy="40" r="3.5" fill="#00BFFF"/>
+    <g fill="#00BFFF">
+      <rect x="-95" y="-22" width="2.5" height="3.5"/>
+      <rect x="-89" y="-22" width="2.5" height="3.5"/>
+      <rect x="-83" y="-22" width="2.5" height="3.5"/>
+      <rect x="-77" y="-22" width="2.5" height="3.5"/>
+      <rect x="-71" y="-22" width="2.5" height="3.5"/>
+    </g>
+    <!-- Badge "5" -->
+    <circle cx="0" cy="-60" r="18" fill="#00BFFF"/>
+    <text x="0" y="-54" text-anchor="middle" fill="#001a2c" font-family="Orbitron, sans-serif" font-size="20" font-weight="900">5</text>
+  </g>
+  <text x="200" y="270" text-anchor="middle" fill="#00BFFF" font-family="Orbitron, sans-serif" font-size="14" font-weight="700" letter-spacing="2">RASPBERRY PI 5</text>
+</svg>

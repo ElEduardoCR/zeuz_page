@@ -1,0 +1,86 @@
+{
+  "currency": "MXN",
+  "country": "MEX",
+  "shipping_free": true,
+  "products": [
+    {
+      "id": "kit-pi4",
+      "name": "ZEUZ DNC – Kit Raspberry Pi 4",
+      "short": "Raspberry Pi 4 + adaptador USB-RS232 + microSD 32GB preconfigurada",
+      "description": "Sistema completo listo para conectar a tu CNC. Incluye Raspberry Pi 4 (2GB), adaptador USB-RS232 FTDI de calidad industrial, microSD de 32GB con ZeuzDNC preinstalado y probado, fuente de alimentación 5V/3A y guía de inicio rápido. Compatible con Fanuc, Fadal, Haas y cualquier control con puerto RS232.",
+      "price": 5499,
+      "includes": [
+        "Raspberry Pi 4 de 2 GB",
+        "Adaptador USB–RS232 con chipset FTDI",
+        "MicroSD de 32 GB con ZEUZ DNC preconfigurado",
+        "Fuente 5 V / 3 A y guía de inicio"
+      ],
+      "image": "img/product-kit-pi4.svg",
+      "badge": "Más vendido",
+      "stock": 10,
+      "category": "kit"
+    },
+    {
+      "id": "kit-pi5",
+      "name": "ZEUZ DNC – Kit Raspberry Pi 5",
+      "short": "Raspberry Pi 5 + adaptador USB-RS232 + microSD 32GB preconfigurada",
+      "description": "La versión más potente. Raspberry Pi 5 (4GB), adaptador USB-RS232 FTDI, microSD 32GB con ZeuzDNC listo, fuente oficial 27W y disipador. Para talleres con archivos de gran tamaño o que quieran más margen de rendimiento.",
+      "price": 7499,
+      "includes": [
+        "Raspberry Pi 5 de 4 GB",
+        "Adaptador USB–RS232 con chipset FTDI",
+        "MicroSD de 32 GB con ZEUZ DNC preconfigurado",
+        "Fuente oficial de 27 W y disipador"
+      ],
+      "image": "img/product-kit-pi5.svg",
+      "badge": "Pro",
+      "stock": 8,
+      "category": "kit"
+    },
+    {
+      "id": "rs232-adapter",
+      "name": "Adaptador USB-RS232 FTDI",
+      "short": "Conversor USB a serial DB9 de calidad industrial",
+      "description": "Chip FTDI genuino (no clon). Compatible con Windows, macOS, Linux y Raspberry Pi sin instalar drivers en la mayoría de los casos. Cable de 1.5m. Listo para conectarse a cualquier control CNC con puerto DB9.",
+      "price": 399,
+      "includes": ["Adaptador USB a DB9", "Cable de 1.5 m", "Soporte de configuración serial"],
+      "image": "img/product-rs232.svg",
+      "stock": 25,
+      "category": "accesorio"
+    },
+    {
+      "id": "microsd-32",
+      "name": "MicroSD 32GB preconfigurada",
+      "short": "Tarjeta con ZeuzDNC instalado y probado",
+      "description": "MicroSD Clase 10 de 32GB con ZeuzDNC ya instalado y probado. Lista para insertar en tu Raspberry Pi. Incluye imagen de respaldo por si necesitas reinstalar.",
+      "price": 299,
+      "includes": ["MicroSD Clase 10 de 32 GB", "ZEUZ DNC instalado", "Imagen de respaldo"],
+      "image": "img/product-microsd.svg",
+      "stock": 30,
+      "category": "accesorio"
+    },
+    {
+      "id": "license-1y",
+      "name": "Licencia ZEUZ DNC (1 año)",
+      "short": "Activación de funciones premium por 12 meses",
+      "description": "Activa las funciones premium de ZeuzDNC por un año desde la fecha de compra. Incluye soporte por correo y acceso a actualizaciones. Renovación opcional, sin compromiso.",
+      "price": 1299,
+      "includes": ["Activación por 12 meses", "Actualizaciones", "Soporte por correo"],
+      "image": "img/product-license.svg",
+      "badge": "Digital",
+      "stock": 999,
+      "category": "licencia"
+    },
+    {
+      "id": "cable-db9",
+      "name": "Cable serial DB9 (2m)",
+      "short": "Cable blindado para conexión CNC",
+      "description": "Cable serial DB9 macho-hembra de 2 metros, blindado, para conectar tu adaptador USB-RS232 al control CNC sin pérdida de señal.",
+      "price": 249,
+      "includes": ["Cable blindado de 2 m", "Conectores DB9 macho–hembra", "Prueba de continuidad"],
+      "image": "img/product-cable.svg",
+      "stock": 40,
+      "category": "accesorio"
+    }
+  ]
+}

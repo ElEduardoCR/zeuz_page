@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Catálogo · ZEUZ DNC{% endblock %}
+
+{% block content %}
+<section class="page-head page-head--catalog">
+  <div class="container">
+    <span class="section-kicker">Tu instalación, pieza por pieza</span>
+    <h1>Equipo para conectar <span class="accent">tu taller</span></h1>
+    <p>Kits completos, software, cables y adaptadores seleccionados para ZEUZ DNC.</p>
+  </div>
+</section>
+
+<section class="container catalog-page">
+  <div class="catalog-tools" aria-label="Filtrar productos">
+    <button type="button" class="catalog-filter is-active" data-filter="all">Todo</button>
+    <button type="button" class="catalog-filter" data-filter="kit">Kits</button>
+    <button type="button" class="catalog-filter" data-filter="accesorio">Cables y adaptadores</button>
+    <button type="button" class="catalog-filter" data-filter="licencia">Software</button>
+  </div>
+  <div class="products-grid" id="catalog-grid">
+    {% for p in products %}
+      {% include "_product_card.html" %}
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.querySelector('.catalog-tools').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-filter]');
+    if (!button) return;
+    const filter = button.dataset.filter;
+    document.querySelectorAll('.catalog-filter').forEach((item) => item.classList.toggle('is-active', item === button));
+    document.querySelectorAll('#catalog-grid .card').forEach((card) => {
+      card.hidden = filter !== 'all' && card.dataset.category !== filter;
+    });
+  });
+</script>
+{% endblock %}

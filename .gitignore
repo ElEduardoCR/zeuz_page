@@ -1,0 +1,19 @@
+# Entorno
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Config local
+.env
+*.local
+
+# Datos en runtime
+data/orders.jsonl
+logs/*.log
+screenshots/
+
+# Sistema
+.DS_Store
+Thumbs.db

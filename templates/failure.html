@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Pago no completado · ZEUZ DNC{% endblock %}
+
+{% block content %}
+<section class="container result">
+  <div class="result__icon result__icon--bad">✕</div>
+  <h1>El pago no se completó</h1>
+  <p class="result__lede">No te preocupes, no se hizo ningún cargo. Puedes intentarlo de nuevo con otro método de pago.</p>
+  <div class="result__cta">
+    <a href="{{ url_for('cart_page') }}" class="btn btn--primary">Volver al carrito</a>
+    <a href="{{ url_for('index') }}" class="btn btn--ghost">Ir al inicio</a>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Carrito · ZEUZ DNC{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div class="container">
+    <h1>Tu carrito</h1>
+    <p>Revisa los productos antes de pasar al pago.</p>
+  </div>
+</section>
+
+<section class="container cart-page">
+  <div id="cart-empty" class="cart-empty" hidden>
+    <div class="cart-empty__icon">🛒</div>
+    <h2>Tu carrito está vacío</h2>
+    <p>Explora nuestro catálogo y añade los productos que necesitas.</p>
+    <a href="{{ url_for('catalog_page') }}" class="btn btn--primary">Ir al catálogo</a>
+  </div>
+
+  <div id="cart-with-items" hidden>
+    <div class="cart-layout">
+      <div class="cart-items" id="cart-items"></div>
+      <aside class="cart-summary">
+        <h2>Resumen</h2>
+        <div class="summary__row">
+          <span>Subtotal</span>
+          <span id="cart-subtotal">$0</span>
+        </div>
+        <div class="summary__row">
+          <span>Envío</span>
+          <span id="cart-shipping">Gratis</span>
+        </div>
+        <div class="summary__row summary__row--total">
+          <span>Total</span>
+          <span id="cart-total">$0</span>
+        </div>
+        <a href="{{ url_for('checkout_page') }}" class="btn btn--primary btn--lg btn--block">
+          Ir a pagar
+        </a>
+        <a href="{{ url_for('catalog_page') }}" class="link-mute">Seguir comprando</a>
+      </aside>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Pasamos el catalogo al cliente para resolver nombres e imagenes sin otro fetch
+  window.__CATALOG__ = {{ products|tojson }};
+</script>
+{% endblock %}

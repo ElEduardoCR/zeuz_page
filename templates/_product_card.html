@@ -1,0 +1,21 @@
+{# Tarjeta reutilizable de producto. Espera 'p' en el contexto. #}
+<article class="card" data-product-id="{{ p.id }}" data-category="{{ p.category }}">
+  {% if p.badge %}<span class="card__badge">{{ p.badge }}</span>{% endif %}
+  <a href="{{ url_for('product_page', product_id=p.id) }}" class="card__media">
+    <img src="{{ url_for('static', filename=p.image) }}" alt="{{ p.name }}" loading="lazy" />
+  </a>
+  <div class="card__body">
+    <h3 class="card__title">
+      <a href="{{ url_for('product_page', product_id=p.id) }}">{{ p.name }}</a>
+    </h3>
+    <p class="card__short">{{ p.short }}</p>
+    <div class="card__footer">
+      <div class="card__price">${{ '{:,.0f}'.format(p.price) }} <span class="card__currency">MXN</span></div>
+      {% if p.stock > 0 %}
+        <button type="button" class="btn btn--primary btn--sm js-add-to-cart" data-id="{{ p.id }}">Añadir</button>
+      {% else %}
+        <span class="card__soldout">Agotado</span>
+      {% endif %}
+    </div>
+  </div>
+</article>

@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}Pago · ZEUZ DNC{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div class="container">
+    <h1>Finalizar compra</h1>
+    <p>Tus datos de contacto y envío. El pago se procesa en Mercado Pago.</p>
+  </div>
+</section>
+
+<section class="container checkout-page">
+  <div class="cart-layout">
+    <form id="checkout-form" class="checkout-form" novalidate>
+      <fieldset>
+        <legend>Contacto</legend>
+        <div class="field">
+          <label for="c-name">Nombre completo *</label>
+          <input type="text" id="c-name" name="name" required autocomplete="name" />
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="c-email">Email *</label>
+            <input type="email" id="c-email" name="email" required autocomplete="email" />
+          </div>
+          <div class="field">
+            <label for="c-phone">Teléfono</label>
+            <input type="tel" id="c-phone" name="phone" autocomplete="tel" placeholder="+52 999 ..." />
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Envío</legend>
+        <div class="field">
+          <label for="c-address">Calle y número</label>
+          <input type="text" id="c-address" name="address" autocomplete="street-address" />
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="c-city">Ciudad</label>
+            <input type="text" id="c-city" name="city" autocomplete="address-level2" />
+          </div>
+          <div class="field field--sm">
+            <label for="c-state">Estado</label>
+            <input type="text" id="c-state" name="state" autocomplete="address-level1" />
+          </div>
+          <div class="field field--sm">
+            <label for="c-zip">CP</label>
+            <input type="text" id="c-zip" name="zip" autocomplete="postal-code" inputmode="numeric" maxlength="5" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="c-notes">Notas para el envío</label>
+          <textarea id="c-notes" name="notes" rows="2" placeholder="Referencia, horario, etc."></textarea>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Pago</legend>
+        <div class="pay-info">
+          <div class="pay-info__icon">🔒</div>
+          <div>
+            <strong>Pago seguro vía Mercado Pago</strong>
+            <p>Aceptamos tarjeta de crédito/débito, OXXO Pay, transferencia SPEI y Mercado Pago saldo.</p>
+          </div>
+        </div>
+      </fieldset>
+
+      <div id="form-error" class="form-error" hidden></div>
+
+      <button type="submit" id="submit-btn" class="btn btn--primary btn--lg btn--block">
+        Pagar con Mercado Pago
+      </button>
+      <p class="legal">Al pagar aceptas nuestros términos y condiciones. Te enviaremos el comprobante por email.</p>
+    </form>
+
+    <aside class="cart-summary">
+      <h2>Tu pedido</h2>
+      <div id="checkout-items" class="checkout-items"></div>
+      <div class="summary__row">
+        <span>Subtotal</span>
+        <span id="checkout-subtotal">$0</span>
+      </div>
+      <div class="summary__row">
+        <span>Envío</span>
+        <span id="checkout-shipping">Gratis</span>
+      </div>
+      <div class="summary__row summary__row--total">
+        <span>Total</span>
+        <span id="checkout-total">$0</span>
+      </div>
+    </aside>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // 1) Catalogo para que shop.js renderice el resumen del pedido
+  window.__CATALOG__ = {{ products|tojson }};
+</script>
+<script>
+  // 2) Submit del form -> crea preferencia MP -> redirige
+  document.getElementById('checkout-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const errBox = document.getElementById('form-error');
+    errBox.hidden = true;
+
+    const cart = Cart.get();
+    if (cart.length === 0) {
+      errBox.textContent = 'Tu carrito está vacío.';
+      errBox.hidden = false;
+      return;
+    }
+
+    const fd = new FormData(form);
+    const customer = Object.fromEntries(fd.entries());
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'Conectando con Mercado Pago...';
+
+    try {
+      const res = await fetch('/api/create-pref', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cart, customer }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Error al crear la preferencia');
+      sessionStorage.setItem('last_order_id', data.order_id);
+      window.location.href = data.init_point;
+    } catch (err) {
+      errBox.textContent = err.message;
+      errBox.hidden = false;
+      btn.disabled = false;
+      btn.textContent = 'Pagar con Mercado Pago';
+    }
+  });
+</script>
+{% endblock %}

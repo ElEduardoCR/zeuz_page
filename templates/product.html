@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} · ZEUZ DNC{% endblock %}
+{% block description %}{{ product.short }}{% endblock %}
+
+{% block content %}
+<section class="container product-detail">
+  <a href="{{ url_for('catalog_page') }}" class="back-link">← Volver al catálogo</a>
+  <div class="product-detail__grid">
+    <div class="product-detail__media">
+      {% if product.badge %}<span class="card__badge">{{ product.badge }}</span>{% endif %}
+      <img src="{{ url_for('static', filename=product.image) }}" alt="{{ product.name }}" />
+    </div>
+    <div class="product-detail__info">
+      <span class="product-detail__category">{{ product.category }}</span>
+      <h1>{{ product.name }}</h1>
+      <p class="product-detail__short">{{ product.short }}</p>
+      <div class="product-detail__price">${{ '{:,.0f}'.format(product.price) }} <span>MXN</span></div>
+      <div class="product-detail__stock">
+        {% if product.stock > 5 %}
+          <span class="dot dot--ok"></span> En stock
+        {% elif product.stock > 0 %}
+          <span class="dot dot--warn"></span> Pocas unidades ({{ product.stock }})
+        {% else %}
+          <span class="dot dot--bad"></span> Agotado
+        {% endif %}
+      </div>
+      <p class="product-detail__desc">{{ product.description }}</p>
+      {% if product.includes %}
+      <div class="product-detail__includes">
+        <strong>Lo que recibes</strong>
+        <ul class="check-list">
+          {% for item in product.includes %}<li>{{ item }}</li>{% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+      <div class="product-detail__actions">
+        <div class="qty">
+          <button type="button" class="qty__btn" data-step="-1" aria-label="Restar">−</button>
+          <input type="number" id="qty" value="1" min="1" max="99" />
+          <button type="button" class="qty__btn" data-step="1" aria-label="Sumar">+</button>
+        </div>
+        <button type="button" class="btn btn--primary btn--lg js-add-to-cart" data-id="{{ product.id }}" data-qty-input="qty">
+          Añadir al carrito
+        </button>
+      </div>
+      <ul class="product-detail__bullets">
+        <li>🚚 Envío gratis a todo México</li>
+        <li>🛡️ 30 días de garantía en hardware</li>
+        <li>📦 Soporte de puesta en marcha</li>
+      </ul>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function() {
+    const qty = document.getElementById('qty');
+    document.querySelectorAll('.qty__btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const step = parseInt(btn.dataset.step, 10);
+        const v = Math.max(1, Math.min(99, (parseInt(qty.value, 10) || 1) + step));
+        qty.value = v;
+      });
+    });
+  })();
+</script>
+{% endblock %}

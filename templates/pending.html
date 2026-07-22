@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Pago pendiente · ZEUZ DNC{% endblock %}
+
+{% block content %}
+<section class="container result">
+  <div class="result__icon result__icon--warn">⏱</div>
+  <h1>Tu pago está pendiente</h1>
+  <p class="result__lede">Si pagaste con OXXO o transferencia SPEI, puede tardar hasta 3 días hábiles en acreditarse.</p>
+  <p>Te avisaremos por email en cuanto se confirme. Si necesitas ayuda, escríbenos a <a href="mailto:hola@zeus-dnc.com">hola@zeus-dnc.com</a>.</p>
+  <div class="result__cta">
+    <a href="{{ url_for('index') }}" class="btn btn--primary">Volver al inicio</a>
+  </div>
+</section>
+{% endblock %}
