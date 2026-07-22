@@ -124,7 +124,7 @@ def api_create_preference():
         return jsonify({"ok": False, "error": f"Faltan datos: {', '.join(missing)}"}), 400
 
     # Resolver productos y total en backend (nunca confiar en el precio del cliente)
-    items_in: list[dict] = cart  # [{"id": "kit-pi4", "qty": 1}, ...]
+    items_in: list[dict] = cart  # [{"id": "zeuzdnc-device", "qty": 1}, ...]
     products = {p["id"]: p for p in catalog.all_products()}
     items: list[dict] = []
     total = 0.0

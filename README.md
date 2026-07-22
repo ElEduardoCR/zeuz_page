@@ -1,6 +1,6 @@
 # ZEUZ DNC — Tienda
 
-Tienda pública del sistema **ZEUZ DNC**. Permite comprar kits, accesorios y
+Tienda pública del sistema **ZEUZ DNC**. Permite comprar el dispositivo, accesorios y
 licencias con pago vía Mercado Pago (Checkout Pro). Proyecto aparte del
 panel de operación (ZeuzDNC/) — separados a propósito porque la tienda va
 expuesta a internet y el panel corre aislado en el taller.
@@ -116,7 +116,7 @@ en cada request, no hace falta reiniciar. Estructura:
 
 ```json
 {
-  "id": "kit-pi4",
+  "id": "zeuzdnc-device",
   "name": "Nombre visible",
   "short": "Subtítulo de una línea",
   "description": "Descripción completa",
@@ -124,14 +124,14 @@ en cada request, no hace falta reiniciar. Estructura:
   "image": "img/product-xxx.svg",
   "badge": "Más vendido",
   "stock": 10,
-  "category": "kit"
+  "category": "dispositivo"
 }
 ```
 
 - `price` en pesos mexicanos (entero, sin centavos por simplicidad).
 - `stock` entero. Si es 0, se muestra "Agotado".
 - `image` ruta relativa a `static/`.
-- `category` libre (`kit`, `accesorio`, `licencia`, etc.) — útil para
+- `category` libre (`dispositivo`, `accesorio`, `software`, etc.) — útil para
   filtrar más adelante.
 
 ## Personalizar marca

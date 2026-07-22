@@ -32,7 +32,7 @@ async def main():
         await shoot(page, "/catalogo", "02-catalogo")
 
         # Producto
-        await shoot(page, "/producto/kit-pi4", "03-producto")
+        await shoot(page, "/producto/zeuzdnc-device", "03-producto")
 
         # Carrito vacio
         await shoot(page, "/carrito", "04-carrito-vacio")
@@ -41,7 +41,7 @@ async def main():
         async def add_to_cart(p):
             await p.evaluate("""() => {
                 localStorage.setItem('zeuz_dnc_cart_v1', JSON.stringify({
-                    items: { 'kit-pi4': 1, 'rs232-adapter': 2, 'cable-db9': 1 }
+                    items: { 'zeuzdnc-device': 1, 'rs232-adapter': 2, 'cable-db9': 1 }
                 }));
             }""")
 
