@@ -10,11 +10,15 @@
     </h3>
     <p class="card__short">{{ p.short }}</p>
     <div class="card__footer">
-      <div class="card__price">${{ '{:,.0f}'.format(p.price) }} <span class="card__currency">MXN</span></div>
+      {% if p.external %}
+        {% include "_app_store_badge.html" %}
+      {% else %}
+        <div class="card__price">${{ '{:,.0f}'.format(p.price) }} <span class="card__currency">MXN</span></div>
       {% if p.stock > 0 %}
         <button type="button" class="btn btn--primary btn--sm js-add-to-cart" data-id="{{ p.id }}">Añadir</button>
       {% else %}
         <span class="card__soldout">Agotado</span>
+      {% endif %}
       {% endif %}
     </div>
   </div>

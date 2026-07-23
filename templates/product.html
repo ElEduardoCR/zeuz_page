@@ -14,6 +14,9 @@
       <span class="product-detail__category">{{ product.category }}</span>
       <h1>{{ product.name }}</h1>
       <p class="product-detail__short">{{ product.short }}</p>
+      {% if product.external %}
+        <div class="product-detail__store-badge">{% include "_app_store_badge.html" %}</div>
+      {% else %}
       <div class="product-detail__price">${{ '{:,.0f}'.format(product.price) }} <span>MXN</span></div>
       <div class="product-detail__stock">
         {% if product.stock > 5 %}
@@ -24,6 +27,7 @@
           <span class="dot dot--bad"></span> Agotado
         {% endif %}
       </div>
+      {% endif %}
       <p class="product-detail__desc">{{ product.description }}</p>
       {% if product.includes %}
       <div class="product-detail__includes">
@@ -33,6 +37,7 @@
         </ul>
       </div>
       {% endif %}
+      {% if not product.external %}
       <div class="product-detail__actions">
         <div class="qty">
           <button type="button" class="qty__btn" data-step="-1" aria-label="Restar">−</button>
@@ -43,10 +48,17 @@
           Añadir al carrito
         </button>
       </div>
+      {% endif %}
       <ul class="product-detail__bullets">
+        {% if product.external %}
+        <li>📱 Diseñada para iPhone y iPad</li>
+        <li>📡 Conexión inalámbrica con ZEUZ DNC</li>
+        <li>↗ Descarga y actualizaciones desde el App Store</li>
+        {% else %}
         <li>🚚 Envío gratis a todo México</li>
         <li>🛡️ 30 días de garantía en dispositivo y accesorios</li>
         <li>📦 Soporte de puesta en marcha</li>
+        {% endif %}
       </ul>
     </div>
   </div>
@@ -57,6 +69,7 @@
 <script>
   (function() {
     const qty = document.getElementById('qty');
+    if (!qty) return;
     document.querySelectorAll('.qty__btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const step = parseInt(btn.dataset.step, 10);

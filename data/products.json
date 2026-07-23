@@ -51,20 +51,21 @@
       "category": "accesorio"
     },
     {
-      "id": "license-1y",
-      "name": "Licencia iZEUZ (1 año)",
-      "short": "Control inalámbrico desde iPhone y iPad",
-      "description": "Activa iZEUZ durante 12 meses para explorar, editar y enviar programas de forma inalámbrica desde un iPhone o iPad a tu dispositivo ZEUZ DNC. Incluye actualizaciones y soporte por correo.",
-      "price": 1299,
+      "id": "izeuz-ios",
+      "name": "iZEUZ para iPhone y iPad",
+      "short": "Transfiere programas de forma inalámbrica con ZEUZ DNC",
+      "description": "iZEUZ te permite explorar, editar y enviar programas de forma inalámbrica desde un iPhone o iPad a tu dispositivo ZEUZ DNC. La ficha de descarga quedará disponible directamente en el App Store.",
+      "price": 0,
       "includes": [
         "Aplicación para iPhone y iPad",
         "Conexión inalámbrica con ZEUZ DNC",
-        "Actualizaciones y soporte por 12 meses"
+        "Actualizaciones desde el App Store"
       ],
       "image": "img/product-license.svg",
-      "badge": "Digital",
+      "badge": "iOS",
       "stock": 999,
-      "category": "software"
+      "category": "software",
+      "external": true
     }
   ]
 }

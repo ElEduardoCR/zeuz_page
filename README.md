@@ -68,6 +68,14 @@ pip install -r requirements.txt
    MP_ENV=sandbox
    ```
 
+La llamada de iZEUZ muestra “Próximamente” mientras `APP_STORE_URL` esté
+vacía. Cuando exista la ficha pública, agrega su URL a `.env` y el distintivo
+se convertirá automáticamente en un enlace al App Store:
+
+```env
+APP_STORE_URL=https://apps.apple.com/mx/app/izeuz/id1234567890
+```
+
 ### 3. Arrancar
 
 ```bash

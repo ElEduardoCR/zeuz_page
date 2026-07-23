@@ -1,0 +1,12 @@
+{% if app_store_url %}
+<a class="app-store-badge" href="{{ app_store_url }}" target="_blank" rel="noopener" aria-label="Consíguelo en el App Store">
+  <span class="app-store-badge__apple" aria-hidden="true"></span>
+  <span><small>Consíguelo en el</small><strong>App Store</strong></span>
+</a>
+{% else %}
+<span class="app-store-badge app-store-badge--soon" role="img" aria-label="Consíguelo en el App Store, próximamente">
+  <span class="app-store-badge__apple" aria-hidden="true"></span>
+  <span><small>Consíguelo en el</small><strong>App Store</strong></span>
+  <em>Próximamente</em>
+</span>
+{% endif %}

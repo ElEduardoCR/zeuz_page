@@ -48,6 +48,13 @@ logging.basicConfig(
 log = app.logger
 
 PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "http://localhost:5000").rstrip("/")
+APP_STORE_URL = os.environ.get("APP_STORE_URL", "").strip()
+
+
+@app.context_processor
+def storefront_links():
+    """Enlaces comerciales compartidos por todas las plantillas."""
+    return {"app_store_url": APP_STORE_URL}
 
 
 # ============================================================
@@ -132,7 +139,7 @@ def api_create_preference():
         pid = it.get("id")
         qty = int(it.get("qty") or 0)
         p = products.get(pid)
-        if not p or qty <= 0:
+        if not p or p.get("external") or qty <= 0:
             continue
         # Limite defensivo contra manipulacion del cliente
         if qty > 99:
