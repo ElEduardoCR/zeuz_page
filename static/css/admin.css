@@ -1,0 +1,293 @@
+/* =====================================================================
+   Panel de administracion de pedidos.
+   Separado de shop.css a proposito: la tienda es oscura y de marca, el
+   panel es una herramienta de trabajo y prioriza leer datos rapido.
+   ===================================================================== */
+
+:root {
+  --a-bg: #f5f6f8;
+  --a-panel: #ffffff;
+  --a-ink: #14181f;
+  --a-dim: #6b7280;
+  --a-line: #e3e6ea;
+  --a-brand: #07111f;
+  --a-accent: #2563eb;
+  --a-ok: #047857;
+  --a-ok-bg: #d1fae5;
+  --a-wait: #92400e;
+  --a-wait-bg: #fef3c7;
+  --a-bad: #b91c1c;
+  --a-bad-bg: #fee2e2;
+  --a-idle: #4b5563;
+  --a-idle-bg: #e5e7eb;
+  --a-radius: 10px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--a-bg);
+  color: var(--a-ink);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+a { color: var(--a-accent); }
+
+/* ---------------------------- Cabecera ---------------------------- */
+
+.a-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 24px;
+  background: var(--a-brand);
+  color: #fff;
+}
+.a-top__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+}
+.a-top__brand img { width: 28px; height: 28px; object-fit: contain; }
+.a-top__right { display: flex; align-items: center; gap: 12px; }
+.a-top__link { color: rgba(255, 255, 255, 0.75); text-decoration: none; font-size: 14px; }
+.a-top__link:hover { color: #fff; }
+
+.a-main { max-width: 1180px; margin: 0 auto; padding: 24px; }
+
+/* ---------------------------- Piezas ---------------------------- */
+
+.a-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.a-head h1 { margin: 0; font-size: 22px; }
+.a-head p { margin: 4px 0 0; font-size: 14px; }
+
+.a-back { display: inline-block; margin-bottom: 12px; text-decoration: none; font-size: 14px; }
+
+.a-search { display: flex; gap: 8px; }
+.a-search input {
+  min-width: 260px;
+  padding: 8px 12px;
+  border: 1px solid var(--a-line);
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+}
+
+.a-btn {
+  padding: 8px 14px;
+  border: 1px solid var(--a-line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--a-ink);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+.a-btn:hover { border-color: #c7ccd3; }
+.a-btn--primary { background: var(--a-brand); border-color: var(--a-brand); color: #fff; }
+.a-btn--primary:hover { opacity: 0.9; }
+.a-btn--ghost { background: transparent; border-color: rgba(125, 135, 150, 0.4); color: inherit; }
+.a-top .a-btn--ghost { color: #fff; }
+.a-btn--block { width: 100%; }
+
+.a-tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 16px; }
+.a-tab {
+  padding: 8px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--a-dim);
+  font-weight: 500;
+  font-size: 14px;
+}
+.a-tab:hover { background: #eceff3; }
+.a-tab.is-active { background: var(--a-brand); color: #fff; }
+
+.a-pill {
+  display: inline-block;
+  min-width: 20px;
+  margin-left: 4px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(125, 135, 150, 0.22);
+  font-size: 12px;
+  text-align: center;
+}
+.a-tab.is-active .a-pill { background: rgba(255, 255, 255, 0.25); }
+.a-pill--go { background: var(--a-ok-bg); color: var(--a-ok); }
+.a-pill--wait { background: var(--a-wait-bg); color: var(--a-wait); }
+
+.a-flash {
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+.a-flash--ok { background: var(--a-ok-bg); color: var(--a-ok); }
+.a-flash--error { background: var(--a-bad-bg); color: var(--a-bad); }
+
+/* ---------------------------- Tabla ---------------------------- */
+
+.a-table-wrap {
+  background: var(--a-panel);
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius);
+  /* La tabla es ancha; que se desplace ella y no toda la pagina. */
+  overflow-x: auto;
+}
+.a-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.a-table th {
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--a-dim);
+  border-bottom: 1px solid var(--a-line);
+  white-space: nowrap;
+}
+.a-table td { padding: 12px 14px; border-bottom: 1px solid var(--a-line); vertical-align: top; }
+.a-table tbody tr { cursor: pointer; }
+.a-table tbody tr:hover { background: #f9fafb; }
+.a-table tbody tr:last-child td { border-bottom: 0; }
+.a-right { text-align: right; }
+.a-nowrap { white-space: nowrap; }
+.a-muted { color: var(--a-dim); }
+.a-small { font-size: 13px; }
+.a-strong { font-weight: 700; }
+.a-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+.a-flag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--a-idle-bg);
+  color: var(--a-idle);
+  font-size: 12px;
+}
+
+.a-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.a-badge--paid { background: var(--a-ok-bg); color: var(--a-ok); }
+.a-badge--sent { background: #dbeafe; color: #1d4ed8; }
+.a-badge--wait { background: var(--a-wait-bg); color: var(--a-wait); }
+.a-badge--bad { background: var(--a-bad-bg); color: var(--a-bad); }
+.a-badge--idle { background: var(--a-idle-bg); color: var(--a-idle); }
+
+.a-empty {
+  padding: 48px 24px;
+  text-align: center;
+  background: var(--a-panel);
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius);
+}
+
+/* ---------------------------- Detalle ---------------------------- */
+
+.a-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.a-card {
+  background: var(--a-panel);
+  border: 1px solid var(--a-line);
+  border-radius: var(--a-radius);
+  padding: 18px;
+}
+.a-card h2 { margin: 0 0 12px; font-size: 15px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--a-dim); }
+
+.a-address {
+  margin: 0 0 12px;
+  padding: 14px;
+  background: #f9fafb;
+  border: 1px dashed var(--a-line);
+  border-radius: 8px;
+  font-style: normal;
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.a-dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 16px 0 0; font-size: 14px; }
+.a-dl dt { color: var(--a-dim); }
+.a-dl dd { margin: 0; text-align: right; }
+.a-dl--totals { border-top: 1px solid var(--a-line); padding-top: 12px; }
+
+.a-items { width: 100%; border-collapse: collapse; font-size: 14px; }
+.a-items td { padding: 6px 0; border-bottom: 1px solid var(--a-line); }
+
+.a-form { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+.a-form label { font-size: 13px; color: var(--a-dim); }
+.a-form input,
+.a-form select,
+.a-form textarea {
+  padding: 9px 12px;
+  border: 1px solid var(--a-line);
+  border-radius: 8px;
+  font: inherit;
+  background: #fff;
+}
+.a-form button { align-self: flex-start; margin-top: 8px; }
+
+.a-shipped {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 14px;
+}
+
+/* ---------------------------- Login ---------------------------- */
+
+.a-login-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--a-brand);
+}
+.a-login {
+  width: min(360px, calc(100vw - 40px));
+  padding: 32px;
+  background: var(--a-panel);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.a-login__logo { width: 44px; height: 44px; object-fit: contain; margin-bottom: 4px; }
+.a-login h1 { margin: 0 0 12px; font-size: 19px; }
+.a-login label { font-size: 13px; color: var(--a-dim); }
+.a-login input {
+  padding: 10px 12px;
+  border: 1px solid var(--a-line);
+  border-radius: 8px;
+  font: inherit;
+}
+.a-login__error { margin: 4px 0 0; color: var(--a-bad); font-size: 14px; }
+.a-login button { margin-top: 12px; }
+
+@media (max-width: 640px) {
+  .a-main { padding: 16px; }
+  .a-search input { min-width: 0; width: 100%; }
+  .a-search { width: 100%; }
+}

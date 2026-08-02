@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Entrar · ZEUZ DNC</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}" />
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}" />
+</head>
+<body class="a-login-body">
+  <form class="a-login" method="post">
+    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="ZEUZ DNC" class="a-login__logo" />
+    <h1>Panel de pedidos</h1>
+    <label for="password">Contraseña</label>
+    <input type="password" id="password" name="password" required autofocus autocomplete="current-password" />
+    {% if error %}<p class="a-login__error">{{ error }}</p>{% endif %}
+    <button type="submit" class="a-btn a-btn--primary a-btn--block">Entrar</button>
+  </form>
+</body>
+</html>

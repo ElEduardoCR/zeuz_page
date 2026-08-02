@@ -11,6 +11,8 @@ __pycache__/
 
 # Datos en runtime
 data/orders.jsonl
+data/shop.db
+data/shop.db-journal
 logs/*.log
 screenshots/
 

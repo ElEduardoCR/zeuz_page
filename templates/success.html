@@ -8,8 +8,16 @@
   <p class="result__lede">Gracias por tu compra. Te enviamos un email con los detalles.</p>
   <div class="result__box">
     <div class="result__row"><span>Orden</span><strong id="order-id">{% if order_id %}{{ order_id }}{% else %}—{% endif %}</strong></div>
-    <div class="result__row"><span>ID de pago</span><strong>{% if payment_id %}{{ payment_id }}{% else %}—{% endif %}</strong></div>
+    {% if order %}
+    <div class="result__row"><span>Total</span><strong>{{ order.total|money(order.currency) }}</strong></div>
+    <div class="result__row"><span>Estado</span><strong>
+      {% if order.is_paid %}Pago confirmado · preparando envío
+      {% elif order.status == 'pending_payment' %}Esperando confirmación del pago
+      {% else %}Procesando{% endif %}
+    </strong></div>
+    {% else %}
     <div class="result__row"><span>Estado</span><strong>Procesando envío</strong></div>
+    {% endif %}
   </div>
   <p>Tu pedido se está preparando. Te avisaremos cuando sea enviado con el número de rastreo.</p>
   <div class="result__cta">

@@ -6,18 +6,50 @@
 <section class="container product-detail">
   <a href="{{ url_for('catalog_page') }}" class="back-link">← Volver al catálogo</a>
   <div class="product-detail__grid">
-    <div class="product-detail__media">
-      {% if product.badge %}<span class="card__badge">{{ product.badge }}</span>{% endif %}
-      <img src="{{ url_for('static', filename=product.image) }}" alt="{{ product.name }}" />
+    <div class="product-gallery{% if product.images|length > 1 %} product-gallery--multi{% endif %}">
+      <div class="product-detail__media">
+        {% if product.badge %}<span class="card__badge">{{ product.badge }}</span>{% endif %}
+        <img id="gallery-main"
+             src="{{ url_for('static', filename=product.image) }}"
+             alt="{{ product.name }}" />
+      </div>
+      {# Las miniaturas solo aparecen cuando hay mas de una foto: con una sola
+         se ve exactamente igual que antes de existir la galeria. #}
+      {% if product.images|length > 1 %}
+      <div class="product-gallery__thumbs" role="group" aria-label="Fotos de {{ product.name }}">
+        {% for image in product.images %}
+          <button type="button"
+                  class="product-gallery__thumb{% if loop.first %} is-active{% endif %}"
+                  data-src="{{ url_for('static', filename=image) }}"
+                  aria-label="Foto {{ loop.index }} de {{ product.images|length }}">
+            <img src="{{ url_for('static', filename=image) }}" alt="" loading="lazy" />
+          </button>
+        {% endfor %}
+      </div>
+      {% endif %}
     </div>
+
     <div class="product-detail__info">
       <span class="product-detail__category">{{ product.category }}</span>
       <h1>{{ product.name }}</h1>
       <p class="product-detail__short">{{ product.short }}</p>
+
       {% if product.external %}
+        <div class="product-detail__price">
+          {{ product.price.gross|money(product.price.currency) }}
+          <span class="product-detail__price-note">en el App Store</span>
+        </div>
         <div class="product-detail__store-badge">{% include "_app_store_badge.html" %}</div>
       {% else %}
-      <div class="product-detail__price">${{ '{:,.0f}'.format(product.price) }} <span>MXN</span></div>
+      <div class="product-detail__price">
+        {{ product.price.gross|money(product.price.currency) }}
+        {% if product.price.tax_rate > 0 %}
+          <span class="product-detail__price-note">
+            {{ product.price.net|money(product.price.currency) }} + {{ store.tax_label }}
+            ({{ (product.price.tax_rate * 100)|round|int }}%)
+          </span>
+        {% endif %}
+      </div>
       <div class="product-detail__stock">
         {% if product.stock > 5 %}
           <span class="dot dot--ok"></span> En stock
@@ -28,7 +60,9 @@
         {% endif %}
       </div>
       {% endif %}
+
       <p class="product-detail__desc">{{ product.description }}</p>
+
       {% if product.includes %}
       <div class="product-detail__includes">
         <strong>Lo que recibes</strong>
@@ -37,6 +71,7 @@
         </ul>
       </div>
       {% endif %}
+
       {% if not product.external %}
       <div class="product-detail__actions">
         <div class="qty">
@@ -49,19 +84,32 @@
         </button>
       </div>
       {% endif %}
+
       <ul class="product-detail__bullets">
         {% if product.external %}
         <li>📱 Diseñada para iPhone y iPad</li>
         <li>📡 Conexión inalámbrica con ZEUZ DNC</li>
         <li>↗ Descarga y actualizaciones desde el App Store</li>
         {% else %}
-        <li>🚚 Envío gratis a todo México</li>
-        <li>🛡️ 30 días de garantía en dispositivo y accesorios</li>
+        <li>🚚 Envío a {{ store.region_label }}: {{ store.shipping_flat|money(store.currency) }}</li>
+        <li>🛡️ 30 días de garantía en el dispositivo</li>
         <li>📦 Soporte de puesta en marcha</li>
+        {% if store.customs_notice %}
+        <li>🛃 Los aranceles de importación los cobra la paquetería al entregar</li>
+        {% endif %}
         {% endif %}
       </ul>
     </div>
   </div>
+
+  {% if related %}
+  <div class="product-related">
+    <h2 class="section-title">También <span class="accent">te sirve</span></h2>
+    <div class="products-grid">
+      {% for p in related %}{% include "_product_card.html" %}{% endfor %}
+    </div>
+  </div>
+  {% endif %}
 </section>
 {% endblock %}
 
@@ -69,12 +117,23 @@
 <script>
   (function() {
     const qty = document.getElementById('qty');
-    if (!qty) return;
-    document.querySelectorAll('.qty__btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const step = parseInt(btn.dataset.step, 10);
-        const v = Math.max(1, Math.min(99, (parseInt(qty.value, 10) || 1) + step));
-        qty.value = v;
+    if (qty) {
+      document.querySelectorAll('.qty__btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const step = parseInt(btn.dataset.step, 10);
+          const v = Math.max(1, Math.min(99, (parseInt(qty.value, 10) || 1) + step));
+          qty.value = v;
+        });
+      });
+    }
+
+    // Galeria: la miniatura elegida pasa a ser la imagen grande.
+    const main = document.getElementById('gallery-main');
+    const thumbs = document.querySelectorAll('.product-gallery__thumb');
+    thumbs.forEach((thumb) => {
+      thumb.addEventListener('click', () => {
+        main.src = thumb.dataset.src;
+        thumbs.forEach((t) => t.classList.toggle('is-active', t === thumb));
       });
     });
   })();

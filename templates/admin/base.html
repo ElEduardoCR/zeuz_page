@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Pedidos{% endblock %} · ZEUZ DNC</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}" />
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}" />
+</head>
+<body>
+  <header class="a-top">
+    <a class="a-top__brand" href="{{ url_for('admin.orders_list') }}">
+      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="" />
+      <span>ZEUZ DNC · Pedidos</span>
+    </a>
+    <div class="a-top__right">
+      <a class="a-top__link" href="{{ url_for('index') }}" target="_blank" rel="noopener">Ver tienda ↗</a>
+      <form method="post" action="{{ url_for('admin.logout') }}">
+        <button type="submit" class="a-btn a-btn--ghost">Salir</button>
+      </form>
+    </div>
+  </header>
+
+  <main class="a-main">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="a-flash a-flash--{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

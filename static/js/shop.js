@@ -1,13 +1,38 @@
 /**
- * Lógica de UI: pintar carrito, checkout, y botones "Añadir al carrito".
- * Espera window.__CATALOG__ en /carrito para resolver nombres/precios.
+ * Logica de UI: botones de "añadir al carrito", pagina de carrito y resumen
+ * del checkout.
+ *
+ * Los totales (impuesto, envio, total) NO se calculan aqui: se piden a
+ * /api/quote. Asi existe una sola formula, la del servidor, y lo que ve el
+ * cliente es exactamente lo que se va a cobrar. El JS solo pinta.
+ *
+ * Espera window.__CATALOG__ (productos de la region) y window.__STORE__
+ * (moneda, locale, etiquetas), ambos inyectados por las plantillas.
  */
 (function () {
   'use strict';
 
-  // Helper: formato moneda MXN
-  const fmt = (n) => '$' + Number(n).toLocaleString('es-MX', { maximumFractionDigits: 0 });
-  const catalog = (window.__CATALOG__ || []).reduce((acc, p) => (acc[p.id] = p, acc), {});
+  const store = window.__STORE__ || { currency: 'MXN', locale: 'es-MX' };
+  const catalog = (window.__CATALOG__ || []).reduce((acc, p) => ((acc[p.id] = p), acc), {});
+
+  function fmt(amount) {
+    const value = Number(amount) || 0;
+    const decimals = Number.isInteger(value) ? 0 : 2;
+    return (
+      '$' +
+      value.toLocaleString(store.locale || 'es-MX', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      }) +
+      ' ' +
+      store.currency
+    );
+  }
+
+  function grossOf(product) {
+    // El catalogo trae el precio ya resuelto para la region activa.
+    return (product && product.price && product.price.gross) || 0;
+  }
 
   // -------- Botones "Añadir al carrito" --------
   document.addEventListener('click', (e) => {
@@ -34,7 +59,42 @@
     }, 1000);
   }
 
-  // -------- Página /carrito --------
+  // -------- Totales autoritativos --------
+  let quoteTimer = null;
+  function fetchQuote(onDone) {
+    clearTimeout(quoteTimer);
+    quoteTimer = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/quote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cart: Cart.get() }),
+        });
+        const data = await res.json();
+        if (data && data.ok) onDone(data.totals);
+      } catch (err) {
+        /* Sin conexion dejamos los importes como estan en vez de mentir. */
+      }
+    }, 80);
+  }
+
+  function paint(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  }
+
+  function paintTotals(totals) {
+    paint('cart-subtotal', fmt(totals.subtotal_gross));
+    paint('cart-shipping', totals.shipping > 0 ? fmt(totals.shipping) : 'Gratis');
+    paint('cart-total', fmt(totals.total));
+
+    paint('checkout-subtotal', fmt(totals.subtotal_net));
+    paint('checkout-tax', fmt(totals.tax));
+    paint('checkout-shipping', totals.shipping > 0 ? fmt(totals.shipping) : 'Gratis');
+    paint('checkout-total', fmt(totals.total));
+  }
+
+  // -------- Pagina /carrito --------
   function renderCart() {
     const empty = document.getElementById('cart-empty');
     const wrap = document.getElementById('cart-with-items');
@@ -51,12 +111,9 @@
 
     const root = document.getElementById('cart-items');
     root.innerHTML = '';
-    let total = 0;
     for (const it of items) {
       const p = catalog[it.id];
       if (!p) continue;
-      const subtotal = p.price * it.qty;
-      total += subtotal;
       const row = document.createElement('div');
       row.className = 'cart-item';
       row.innerHTML = `
@@ -73,15 +130,15 @@
           </div>
         </div>
         <div class="cart-item__controls">
-          <div class="cart-item__price">${fmt(subtotal)}</div>
+          <div class="cart-item__price">${fmt(grossOf(p) * it.qty)}</div>
           <button class="cart-item__remove" data-action="remove" data-id="${p.id}">Quitar</button>
         </div>
       `;
       root.appendChild(row);
     }
-    document.getElementById('cart-subtotal').textContent = fmt(total);
-    document.getElementById('cart-total').textContent = fmt(total);
+    fetchQuote(paintTotals);
   }
+
   if (document.getElementById('cart-items')) {
     renderCart();
     Cart.onChange(renderCart);
@@ -89,8 +146,7 @@
       const btn = e.target.closest('[data-action]');
       if (!btn) return;
       const id = btn.dataset.id;
-      const items = Cart.get();
-      const cur = items.find((i) => i.id === id);
+      const cur = Cart.get().find((i) => i.id === id);
       if (!cur) return;
       if (btn.dataset.action === 'inc') Cart.setQty(id, cur.qty + 1);
       if (btn.dataset.action === 'dec') Cart.setQty(id, Math.max(1, cur.qty - 1));
@@ -103,13 +159,12 @@
     });
   }
 
-  // -------- Página /checkout --------
+  // -------- Pagina /checkout --------
   function renderCheckoutSummary() {
     const root = document.getElementById('checkout-items');
     if (!root) return;
     const items = Cart.get();
     root.innerHTML = '';
-    let total = 0;
     if (items.length === 0) {
       const p = document.createElement('p');
       p.style.color = 'var(--text-dim)';
@@ -119,21 +174,19 @@
       for (const it of items) {
         const p = catalog[it.id];
         if (!p) continue;
-        const subtotal = p.price * it.qty;
-        total += subtotal;
         const row = document.createElement('div');
         row.className = 'checkout-item';
         row.innerHTML = `
           <span class="checkout-item__name">${escapeHtml(p.name)}</span>
           <span class="checkout-item__qty">x ${it.qty}</span>
-          <span class="checkout-item__price">${fmt(subtotal)}</span>
+          <span class="checkout-item__price">${fmt(grossOf(p) * it.qty)}</span>
         `;
         root.appendChild(row);
       }
     }
-    document.getElementById('checkout-subtotal').textContent = fmt(total);
-    document.getElementById('checkout-total').textContent = fmt(total);
+    fetchQuote(paintTotals);
   }
+
   if (document.getElementById('checkout-items')) {
     renderCheckoutSummary();
     Cart.onChange(renderCheckoutSummary);

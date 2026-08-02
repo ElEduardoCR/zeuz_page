@@ -1,71 +1,118 @@
 {
-  "currency": "MXN",
-  "country": "MEX",
-  "shipping_free": true,
+  "default_region": "MX",
+  "regions": {
+    "MX": {
+      "label": "México",
+      "flag": "🇲🇽",
+      "currency": "MXN",
+      "locale": "es-MX",
+      "tax_rate": 0.16,
+      "tax_label": "IVA",
+      "shipping_flat": 250,
+      "free_shipping_over": null,
+      "gateways": ["mercadopago", "stripe"],
+      "default_gateway": "mercadopago",
+      "customs_notice": false
+    },
+    "US": {
+      "label": "Estados Unidos",
+      "flag": "🇺🇸",
+      "currency": "USD",
+      "locale": "en-US",
+      "tax_rate": 0.0,
+      "tax_label": "Tax",
+      "shipping_flat": 60,
+      "free_shipping_over": null,
+      "gateways": ["stripe"],
+      "default_gateway": "stripe",
+      "customs_notice": true
+    }
+  },
   "products": [
     {
-      "id": "zeuzdnc-device",
-      "name": "ZEUZ DNC",
-      "short": "Dispositivo DNC táctil para transferir programas CNC por RS232",
-      "description": "ZEUZ DNC es un dispositivo completo para administrar, editar y transferir programas a máquinas CNC mediante RS232. Su pantalla táctil permite elegir el archivo, seleccionar el perfil de la máquina y confirmar cada envío desde un solo lugar. Se conecta a la red del taller para recibir programas y trabajar de forma inalámbrica con la aplicación iZEUZ para iPhone y iPad.",
-      "price": 5499,
+      "id": "zeuzdnc-touch",
+      "active": true,
+      "name": "ZEUZ DNC — Pantalla táctil 7\"",
+      "short": "Dispositivo DNC con pantalla táctil para transferir programas CNC por RS232",
+      "description": "La versión completa de ZEUZ DNC. Su pantalla táctil de 7 pulgadas te permite administrar, editar y transferir programas a máquinas CNC sin depender de otro equipo: eliges el archivo, seleccionas el perfil de la máquina y confirmas el envío desde el propio dispositivo, junto al control. Se conecta a la red del taller para recibir programas y trabaja de forma inalámbrica con la aplicación iZEUZ para iPhone y iPad.",
+      "prices": { "MXN": 8900, "USD": 499 },
       "includes": [
-        "Dispositivo ZEUZ DNC con pantalla táctil",
+        "Dispositivo ZEUZ DNC con pantalla táctil de 7\"",
         "Salida RS232 para la máquina CNC",
         "Conectividad de red para iZEUZ",
         "Configuración inicial y guía de puesta en marcha"
       ],
-      "image": "img/product-zeuzdnc-device.jpg",
+      "images": ["img/product-zeuzdnc-device.jpg"],
       "badge": "Más vendido",
       "stock": 10,
       "category": "dispositivo"
     },
     {
-      "id": "rs232-adapter",
-      "name": "Adaptador USB–RS232 FTDI",
-      "short": "Conversor serial DB9 de calidad industrial",
-      "description": "Adaptador con chipset FTDI genuino para conexiones seriales estables. Cable de 1.5 metros y conector DB9, ideal como repuesto o para ampliar una instalación ZEUZ DNC.",
-      "price": 399,
+      "id": "zeuzdnc-headless",
+      "active": true,
+      "name": "ZEUZ DNC — Sin pantalla",
+      "short": "El mismo dispositivo DNC, operado desde iZEUZ o desde la red del taller",
+      "description": "La misma electrónica y la misma transferencia RS232 que la versión con pantalla, sin el módulo táctil. Se opera por completo desde la aplicación iZEUZ en iPhone o iPad, o desde el navegador de cualquier equipo conectado a la red del taller. Es la opción indicada cuando el control CNC está en un espacio reducido, cuando ya trabajas desde el teléfono, o cuando quieres equipar varias máquinas al menor costo por punto.",
+      "prices": { "MXN": 7499, "USD": 349 },
       "includes": [
-        "Adaptador USB a DB9",
-        "Cable de 1.5 metros",
-        "Soporte para configuración serial"
+        "Dispositivo ZEUZ DNC sin módulo táctil",
+        "Salida RS232 para la máquina CNC",
+        "Operación desde iZEUZ o desde el navegador en red",
+        "Configuración inicial y guía de puesta en marcha"
       ],
-      "image": "img/product-rs232.svg",
-      "stock": 25,
-      "category": "accesorio"
-    },
-    {
-      "id": "cable-db9",
-      "name": "Cable serial DB9 (2 m)",
-      "short": "Cable blindado para conectar ZEUZ DNC al control CNC",
-      "description": "Cable serial DB9 macho–hembra de 2 metros, blindado para mantener una transferencia estable entre ZEUZ DNC y el control CNC.",
-      "price": 249,
-      "includes": [
-        "Cable blindado de 2 metros",
-        "Conectores DB9 macho–hembra",
-        "Prueba de continuidad"
-      ],
-      "image": "img/product-cable.svg",
-      "stock": 40,
-      "category": "accesorio"
+      "images": ["img/product-zeuzdnc-device.jpg"],
+      "stock": 10,
+      "category": "dispositivo"
     },
     {
       "id": "izeuz-ios",
+      "active": true,
+      "external": true,
       "name": "iZEUZ para iPhone y iPad",
       "short": "Transfiere programas de forma inalámbrica con ZEUZ DNC",
-      "description": "iZEUZ te permite explorar, editar y enviar programas de forma inalámbrica desde un iPhone o iPad a tu dispositivo ZEUZ DNC. La ficha de descarga quedará disponible directamente en el App Store.",
-      "price": 0,
+      "description": "iZEUZ te permite explorar, editar y enviar programas de forma inalámbrica desde un iPhone o iPad a tu dispositivo ZEUZ DNC. Se adquiere directamente en el App Store.",
+      "prices": { "MXN": 299, "USD": 19 },
       "includes": [
         "Aplicación para iPhone y iPad",
         "Conexión inalámbrica con ZEUZ DNC",
         "Actualizaciones desde el App Store"
       ],
-      "image": "img/product-license.svg",
+      "images": ["img/product-license.svg"],
       "badge": "iOS",
       "stock": 999,
-      "category": "software",
-      "external": true
+      "category": "software"
+    },
+    {
+      "id": "rs232-adapter",
+      "active": false,
+      "name": "Adaptador USB–RS232 FTDI",
+      "short": "Conversor serial DB9 de calidad industrial",
+      "description": "Adaptador con chipset FTDI genuino para conexiones seriales estables. Cable de 1.5 metros y conector DB9, ideal como repuesto o para ampliar una instalación ZEUZ DNC.",
+      "prices": { "MXN": 399, "USD": 25 },
+      "includes": [
+        "Adaptador USB a DB9",
+        "Cable de 1.5 metros",
+        "Soporte para configuración serial"
+      ],
+      "images": ["img/product-rs232.svg"],
+      "stock": 25,
+      "category": "accesorio"
+    },
+    {
+      "id": "cable-db9",
+      "active": false,
+      "name": "Cable serial DB9 (2 m)",
+      "short": "Cable blindado para conectar ZEUZ DNC al control CNC",
+      "description": "Cable serial DB9 macho–hembra de 2 metros, blindado para mantener una transferencia estable entre ZEUZ DNC y el control CNC.",
+      "prices": { "MXN": 249, "USD": 15 },
+      "includes": [
+        "Cable blindado de 2 metros",
+        "Conectores DB9 macho–hembra",
+        "Prueba de continuidad"
+      ],
+      "images": ["img/product-cable.svg"],
+      "stock": 40,
+      "category": "accesorio"
     }
   ]
 }
