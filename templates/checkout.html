@@ -78,7 +78,16 @@
 
       <fieldset>
         <legend>Pago</legend>
-        {% if store.gateways|length > 1 %}
+        {% if store.gateways|length == 0 %}
+        {# Ninguna pasarela con credenciales. Decirlo claro es mejor que
+           dejar un boton que falla al pulsarlo. #}
+        <div class="notice notice--down">
+          <strong>Los pagos en línea están temporalmente fuera de servicio</strong>
+          <p>Estamos resolviéndolo. Si quieres hacer tu pedido ahora, escríbenos a
+             <a href="mailto:{{ support_email }}">{{ support_email }}</a> y lo procesamos
+             contigo directamente.</p>
+        </div>
+        {% elif store.gateways|length > 1 %}
         <div class="pay-options" role="radiogroup" aria-label="Método de pago">
           {% for gateway in store.gateways %}
           <label class="pay-option">
@@ -119,8 +128,9 @@
 
       <div id="form-error" class="form-error" hidden></div>
 
-      <button type="submit" id="submit-btn" class="btn btn--primary btn--lg btn--block">
-        Continuar al pago
+      <button type="submit" id="submit-btn" class="btn btn--primary btn--lg btn--block"
+              {% if store.gateways|length == 0 %}disabled{% endif %}>
+        {% if store.gateways|length == 0 %}Pagos no disponibles{% else %}Continuar al pago{% endif %}
       </button>
       <p class="legal">Al pagar aceptas nuestros términos y condiciones. Te enviaremos el comprobante por email.</p>
     </form>
