@@ -111,7 +111,17 @@ def resolve_region() -> None:
     y despues la cookie. Si ninguno es valido, cae a la region por defecto.
     """
     requested = request.args.get("region") or request.cookies.get(REGION_COOKIE)
-    g.region = catalog.get_region(requested)
+    region = catalog.get_region(requested)
+
+    # Ofrecer solo las pasarelas que de verdad tienen credenciales. Sin este
+    # filtro, una region que lista Mercado Pago sin token configurado le
+    # muestra la opcion al cliente y revienta al pulsar pagar.
+    available = {"stripe": payments_stripe.is_configured(), "mercadopago": payments_mp.is_configured()}
+    region["gateways"] = [gw for gw in region.get("gateways", []) if available.get(gw)]
+    if region.get("default_gateway") not in region["gateways"]:
+        region["default_gateway"] = region["gateways"][0] if region["gateways"] else None
+
+    g.region = region
 
 
 @app.context_processor

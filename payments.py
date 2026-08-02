@@ -8,6 +8,12 @@ from typing import Any
 log = logging.getLogger(__name__)
 
 
+def is_configured() -> bool:
+    """Si hay credenciales utilizables de Mercado Pago."""
+    token = os.environ.get("MP_ACCESS_TOKEN", "").strip()
+    return bool(token) and not token.startswith("APP_USR-TU_")
+
+
 def _is_sandbox() -> bool:
     return os.environ.get("MP_ENV", "sandbox").lower() != "production"
 

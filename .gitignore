@@ -20,3 +20,6 @@ screenshots/
 # Sistema
 .DS_Store
 Thumbs.db
+
+# Variables para importar a Vercel (contiene secretos)
+vercel-env.local
