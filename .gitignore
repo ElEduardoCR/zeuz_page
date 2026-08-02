@@ -7,10 +7,13 @@ __pycache__/
 
 # Config local
 .env
+.env.production
 *.local
 
 # Datos en runtime
 data/orders.jsonl
+data/shop.db
+data/shop.db-journal
 logs/*.log
 screenshots/
 

@@ -5,7 +5,14 @@
 <section class="page-head">
   <div class="container">
     <h1>Finalizar compra</h1>
-    <p>Tus datos de contacto y envío. El pago se procesa en Mercado Pago.</p>
+    <p>Envío a <strong>{{ store.region_label }}</strong>, precios en {{ store.currency }}.
+      {% if regions|length > 1 %}
+        ¿Envías a otro país?
+        {% for code, region in regions.items() %}{% if code != store.region %}
+          <a href="{{ url_for('set_region', code=code, next=request.path) }}">Cambiar a {{ region.label }}</a>
+        {% endif %}{% endfor %}
+      {% endif %}
+    </p>
   </div>
 </section>
 
@@ -25,29 +32,42 @@
           </div>
           <div class="field">
             <label for="c-phone">Teléfono</label>
-            <input type="tel" id="c-phone" name="phone" autocomplete="tel" placeholder="+52 999 ..." />
+            <input type="tel" id="c-phone" name="phone" autocomplete="tel"
+                   placeholder="{% if store.region == 'US' %}+1 555 ...{% else %}+52 999 ...{% endif %}" />
           </div>
         </div>
       </fieldset>
 
       <fieldset>
-        <legend>Envío</legend>
+        <legend>Envío a {{ store.region_label }}</legend>
         <div class="field">
-          <label for="c-address">Calle y número</label>
-          <input type="text" id="c-address" name="address" autocomplete="street-address" />
+          <label for="c-address">{% if store.region == 'US' %}Street address *{% else %}Calle y número *{% endif %}</label>
+          <input type="text" id="c-address" name="address" required autocomplete="street-address" />
+        </div>
+        <div class="field">
+          <label for="c-address2">{% if store.region == 'US' %}Apt, suite (opcional){% else %}Interior, colonia (opcional){% endif %}</label>
+          <input type="text" id="c-address2" name="address2" autocomplete="address-line2" />
         </div>
         <div class="field-row">
           <div class="field">
-            <label for="c-city">Ciudad</label>
-            <input type="text" id="c-city" name="city" autocomplete="address-level2" />
+            <label for="c-city">Ciudad *</label>
+            <input type="text" id="c-city" name="city" required autocomplete="address-level2" />
           </div>
           <div class="field field--sm">
-            <label for="c-state">Estado</label>
-            <input type="text" id="c-state" name="state" autocomplete="address-level1" />
+            <label for="c-state">Estado *</label>
+            {% if store.region == 'US' %}
+              <select id="c-state" name="state" required autocomplete="address-level1">
+                <option value="">—</option>
+                {% for code, name in us_states %}<option value="{{ code }}">{{ code }} — {{ name }}</option>{% endfor %}
+              </select>
+            {% else %}
+              <input type="text" id="c-state" name="state" required autocomplete="address-level1" />
+            {% endif %}
           </div>
           <div class="field field--sm">
-            <label for="c-zip">CP</label>
-            <input type="text" id="c-zip" name="zip" autocomplete="postal-code" inputmode="numeric" maxlength="5" />
+            <label for="c-zip">{% if store.region == 'US' %}ZIP *{% else %}CP *{% endif %}</label>
+            <input type="text" id="c-zip" name="zip" required autocomplete="postal-code"
+                   inputmode="numeric" maxlength="{% if store.region == 'US' %}10{% else %}5{% endif %}" />
           </div>
         </div>
         <div class="field">
@@ -58,19 +78,49 @@
 
       <fieldset>
         <legend>Pago</legend>
+        {% if store.gateways|length > 1 %}
+        <div class="pay-options" role="radiogroup" aria-label="Método de pago">
+          {% for gateway in store.gateways %}
+          <label class="pay-option">
+            <input type="radio" name="gateway" value="{{ gateway }}"
+                   {% if gateway == store.default_gateway %}checked{% endif %} />
+            <span class="pay-option__body">
+              {% if gateway == 'mercadopago' %}
+                <strong>Mercado Pago</strong>
+                <small>Tarjeta, OXXO, SPEI y saldo Mercado Pago</small>
+              {% else %}
+                <strong>Tarjeta (Stripe)</strong>
+                <small>Visa, Mastercard y American Express</small>
+              {% endif %}
+            </span>
+          </label>
+          {% endfor %}
+        </div>
+        {% else %}
+        <input type="hidden" name="gateway" value="{{ store.default_gateway }}" />
         <div class="pay-info">
           <div class="pay-info__icon">🔒</div>
           <div>
-            <strong>Pago seguro vía Mercado Pago</strong>
-            <p>Aceptamos tarjeta de crédito/débito, OXXO Pay, transferencia SPEI y Mercado Pago saldo.</p>
+            <strong>Pago seguro vía {% if store.default_gateway == 'stripe' %}Stripe{% else %}Mercado Pago{% endif %}</strong>
+            <p>{% if store.default_gateway == 'stripe' %}Visa, Mastercard y American Express.{% else %}Tarjeta de crédito/débito, OXXO Pay, transferencia SPEI y saldo Mercado Pago.{% endif %}</p>
           </div>
         </div>
+        {% endif %}
+
+        {% if store.customs_notice %}
+        <div class="notice notice--customs">
+          <strong>Aranceles de importación</strong>
+          <p>El precio y el envío no incluyen los aranceles ni tarifas de despacho aduanal
+             de Estados Unidos. La paquetería los cobra directamente al destinatario en el
+             momento de la entrega.</p>
+        </div>
+        {% endif %}
       </fieldset>
 
       <div id="form-error" class="form-error" hidden></div>
 
       <button type="submit" id="submit-btn" class="btn btn--primary btn--lg btn--block">
-        Pagar con Mercado Pago
+        Continuar al pago
       </button>
       <p class="legal">Al pagar aceptas nuestros términos y condiciones. Te enviaremos el comprobante por email.</p>
     </form>
@@ -80,15 +130,21 @@
       <div id="checkout-items" class="checkout-items"></div>
       <div class="summary__row">
         <span>Subtotal</span>
-        <span id="checkout-subtotal">$0</span>
+        <span id="checkout-subtotal">—</span>
       </div>
+      {% if store.tax_rate > 0 %}
+      <div class="summary__row">
+        <span>{{ store.tax_label }} ({{ (store.tax_rate * 100)|round|int }}%)</span>
+        <span id="checkout-tax">—</span>
+      </div>
+      {% endif %}
       <div class="summary__row">
         <span>Envío</span>
-        <span id="checkout-shipping">Gratis</span>
+        <span id="checkout-shipping">—</span>
       </div>
       <div class="summary__row summary__row--total">
         <span>Total</span>
-        <span id="checkout-total">$0</span>
+        <span id="checkout-total">—</span>
       </div>
     </aside>
   </div>
@@ -97,47 +153,51 @@
 
 {% block scripts %}
 <script>
-  // 1) Catalogo para que shop.js renderice el resumen del pedido
   window.__CATALOG__ = {{ products|tojson }};
 </script>
 <script>
-  // 2) Submit del form -> crea preferencia MP -> redirige
-  document.getElementById('checkout-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const form = e.currentTarget;
+  (function () {
+    const form = document.getElementById('checkout-form');
     const errBox = document.getElementById('form-error');
-    errBox.hidden = true;
-
-    const cart = Cart.get();
-    if (cart.length === 0) {
-      errBox.textContent = 'Tu carrito está vacío.';
-      errBox.hidden = false;
-      return;
-    }
-
-    const fd = new FormData(form);
-    const customer = Object.fromEntries(fd.entries());
-
     const btn = document.getElementById('submit-btn');
-    btn.disabled = true;
-    btn.textContent = 'Conectando con Mercado Pago...';
 
-    try {
-      const res = await fetch('/api/create-pref', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cart, customer }),
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || 'Error al crear la preferencia');
-      sessionStorage.setItem('last_order_id', data.order_id);
-      window.location.href = data.init_point;
-    } catch (err) {
-      errBox.textContent = err.message;
-      errBox.hidden = false;
-      btn.disabled = false;
-      btn.textContent = 'Pagar con Mercado Pago';
-    }
-  });
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errBox.hidden = true;
+
+      const cart = Cart.get();
+      if (cart.length === 0) {
+        errBox.textContent = 'Tu carrito está vacío.';
+        errBox.hidden = false;
+        return;
+      }
+      if (!form.reportValidity()) return;
+
+      const fd = new FormData(form);
+      const customer = Object.fromEntries(fd.entries());
+      const gateway = customer.gateway;
+      delete customer.gateway;
+
+      btn.disabled = true;
+      btn.textContent = 'Conectando…';
+
+      try {
+        const res = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cart, customer, gateway }),
+        });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'No se pudo iniciar el pago');
+        sessionStorage.setItem('last_order_id', data.order_id);
+        window.location.href = data.redirect_url;
+      } catch (err) {
+        errBox.textContent = err.message;
+        errBox.hidden = false;
+        btn.disabled = false;
+        btn.textContent = 'Continuar al pago';
+      }
+    });
+  })();
 </script>
 {% endblock %}

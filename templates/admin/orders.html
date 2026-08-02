@@ -1,0 +1,72 @@
+{% extends "admin/base.html" %}
+{% block title %}Pedidos{% endblock %}
+
+{% block content %}
+<div class="a-head">
+  <h1>Pedidos</h1>
+  <form class="a-search" method="get">
+    {% if active_status %}<input type="hidden" name="status" value="{{ active_status }}" />{% endif %}
+    <input type="search" name="q" value="{{ search }}" placeholder="Buscar por nombre, email u orden" />
+    <button type="submit" class="a-btn">Buscar</button>
+  </form>
+</div>
+
+<nav class="a-tabs">
+  <a href="{{ url_for('admin.orders_list') }}" class="a-tab{% if not active_status %} is-active{% endif %}">
+    Todos
+  </a>
+  <a href="{{ url_for('admin.orders_list', status='paid') }}" class="a-tab{% if active_status == 'paid' %} is-active{% endif %}">
+    Por enviar <span class="a-pill a-pill--go">{{ counts.paid }}</span>
+  </a>
+  <a href="{{ url_for('admin.orders_list', status='shipped') }}" class="a-tab{% if active_status == 'shipped' %} is-active{% endif %}">
+    Enviados <span class="a-pill">{{ counts.shipped }}</span>
+  </a>
+  <a href="{{ url_for('admin.orders_list', status='pending') }}" class="a-tab{% if active_status == 'pending' %} is-active{% endif %}">
+    Sin pagar <span class="a-pill a-pill--wait">{{ counts.pending }}</span>
+  </a>
+</nav>
+
+{% if not orders %}
+  <div class="a-empty">
+    <p>No hay pedidos que coincidan.</p>
+    {% if not counts.paid and not counts.shipped and not counts.pending %}
+    <p class="a-muted">Cuando alguien complete una compra aparecerá aquí, con su dirección de envío.</p>
+    {% endif %}
+  </div>
+{% else %}
+<div class="a-table-wrap">
+  <table class="a-table">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Orden</th>
+        <th>Cliente</th>
+        <th>Destino</th>
+        <th class="a-right">Total</th>
+        <th>Pago</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for o in orders %}
+      <tr onclick="window.location='{{ url_for('admin.order_detail', order_id=o.id) }}'">
+        <td class="a-muted a-nowrap">{{ o.created_at|ts }}</td>
+        <td><a href="{{ url_for('admin.order_detail', order_id=o.id) }}" class="a-mono">{{ o.id }}</a></td>
+        <td>
+          <strong>{{ o.customer_name or '—' }}</strong><br />
+          <span class="a-muted">{{ o.customer_email }}</span>
+        </td>
+        <td>
+          {{ o.ship_city or '—' }}{% if o.ship_state %}, {{ o.ship_state }}{% endif %}
+          <span class="a-flag">{{ o.ship_country or o.region }}</span>
+        </td>
+        <td class="a-right a-nowrap"><strong>{{ o.total|money(o.currency) }}</strong></td>
+        <td class="a-muted">{{ 'Stripe' if o.gateway == 'stripe' else 'Mercado Pago' }}</td>
+        <td>{% include "admin/_status.html" %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

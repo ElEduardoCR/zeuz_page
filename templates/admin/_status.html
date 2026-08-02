@@ -1,0 +1,16 @@
+{# Etiqueta de estado. Espera 'o' (la orden) en el contexto. #}
+{% if o.status == 'shipped' %}
+  <span class="a-badge a-badge--sent">Enviado</span>
+{% elif o.status == 'paid' %}
+  <span class="a-badge a-badge--paid">Pagado</span>
+{% elif o.status == 'pending_payment' %}
+  <span class="a-badge a-badge--wait">Esperando pago</span>
+{% elif o.status == 'pending' %}
+  <span class="a-badge a-badge--idle">Sin pagar</span>
+{% elif o.status == 'failed' %}
+  <span class="a-badge a-badge--bad">Fallido</span>
+{% elif o.status == 'cancelled' %}
+  <span class="a-badge a-badge--idle">Cancelado</span>
+{% else %}
+  <span class="a-badge a-badge--idle">{{ o.status }}</span>
+{% endif %}

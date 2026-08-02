@@ -1,0 +1,113 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ order.id }}{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('admin.orders_list') }}" class="a-back">← Todos los pedidos</a>
+
+<div class="a-head">
+  <div>
+    <h1 class="a-mono">{{ order.id }}</h1>
+    <p class="a-muted">
+      {{ order.created_at|ts }} ·
+      {{ 'Stripe' if order.gateway == 'stripe' else 'Mercado Pago' }} ·
+      {{ order.region }}
+    </p>
+  </div>
+  {% set o = order %}{% include "admin/_status.html" %}
+</div>
+
+<div class="a-cols">
+  <section class="a-card">
+    <h2>Enviar a</h2>
+    {# Bloque en texto plano para copiarlo tal cual a la guia de la paqueteria. #}
+    <address class="a-address" id="ship-address">{{ order.customer_name }}
+{{ order.ship_line1 }}{% if order.ship_line2 %}
+{{ order.ship_line2 }}{% endif %}
+{{ order.ship_city }}{% if order.ship_state %}, {{ order.ship_state }}{% endif %} {{ order.ship_zip }}
+{{ order.ship_country }}</address>
+    <button type="button" class="a-btn a-btn--ghost" id="copy-address">Copiar dirección</button>
+
+    <dl class="a-dl">
+      <dt>Email</dt><dd><a href="mailto:{{ order.customer_email }}">{{ order.customer_email }}</a></dd>
+      <dt>Teléfono</dt><dd>{{ order.customer_phone or '—' }}</dd>
+      {% if order.notes %}<dt>Notas del cliente</dt><dd>{{ order.notes }}</dd>{% endif %}
+    </dl>
+  </section>
+
+  <section class="a-card">
+    <h2>Pedido</h2>
+    <table class="a-items">
+      {% for item in order['items'] %}
+      <tr>
+        <td>{{ item.name }}</td>
+        <td class="a-muted">x{{ item.qty }}</td>
+        <td class="a-right">{{ (item.line_gross_cents / 100)|money(order.currency) }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    <dl class="a-dl a-dl--totals">
+      <dt>Subtotal</dt><dd>{{ order.subtotal_net|money(order.currency) }}</dd>
+      <dt>Impuesto</dt><dd>{{ order.tax|money(order.currency) }}</dd>
+      <dt>Envío</dt><dd>{{ order.shipping|money(order.currency) }}</dd>
+      <dt class="a-strong">Total</dt><dd class="a-strong">{{ order.total|money(order.currency) }}</dd>
+    </dl>
+    <p class="a-muted a-small">
+      Referencia de pasarela: <span class="a-mono">{{ order.gateway_ref or '—' }}</span><br />
+      ID de pago: <span class="a-mono">{{ order.gateway_payment_id or '—' }}</span>
+      {% if order.gateway_status %}<br />Detalle: {{ order.gateway_status }}{% endif %}
+    </p>
+  </section>
+</div>
+
+<div class="a-cols">
+  <section class="a-card">
+    <h2>Envío</h2>
+    {% if order.status == 'shipped' %}
+      <p class="a-shipped">
+        Enviado el {{ order.shipped_at|ts }} por <strong>{{ order.tracking_carrier }}</strong><br />
+        Guía: <span class="a-mono">{{ order.tracking_number }}</span>
+      </p>
+      <p class="a-muted a-small">Puedes corregir los datos volviendo a guardar.</p>
+    {% elif not order.is_paid %}
+      <p class="a-muted">Este pedido todavía no está pagado. Espera la confirmación antes de enviarlo.</p>
+    {% endif %}
+
+    {% if order.is_paid %}
+    <form method="post" action="{{ url_for('admin.mark_shipped', order_id=order.id) }}" class="a-form">
+      <label for="carrier">Paquetería</label>
+      <select id="carrier" name="carrier">
+        {% for c in carriers %}
+        <option value="{{ c }}" {% if c == order.tracking_carrier %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+      <label for="tracking">Número de guía</label>
+      <input type="text" id="tracking" name="tracking" value="{{ order.tracking_number }}" required />
+      <button type="submit" class="a-btn a-btn--primary">
+        {% if order.status == 'shipped' %}Actualizar guía{% else %}Marcar como enviado{% endif %}
+      </button>
+    </form>
+    {% endif %}
+  </section>
+
+  <section class="a-card">
+    <h2>Notas internas</h2>
+    <form method="post" action="{{ url_for('admin.save_notes', order_id=order.id) }}" class="a-form">
+      <textarea name="admin_notes" rows="6" placeholder="Incidencias, acuerdos con el cliente, datos de facturación…">{{ order.admin_notes }}</textarea>
+      <button type="submit" class="a-btn">Guardar notas</button>
+    </form>
+  </section>
+</div>
+
+<script>
+  document.getElementById('copy-address').addEventListener('click', async (e) => {
+    const text = document.getElementById('ship-address').innerText;
+    try {
+      await navigator.clipboard.writeText(text);
+      e.target.textContent = '¡Copiada!';
+      setTimeout(() => (e.target.textContent = 'Copiar dirección'), 1500);
+    } catch (err) {
+      e.target.textContent = 'No se pudo copiar';
+    }
+  });
+</script>
+{% endblock %}

@@ -964,3 +964,108 @@ body {
   .nav a { display: none; }
   .nav a:nth-child(2) { display: block; padding: 8px 10px; }
 }
+
+/* ==================== Region, precios y pasarelas ==================== */
+
+.topbar__actions { display: flex; align-items: center; gap: 12px; }
+
+.region-switch {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(6, 11, 18, 0.6);
+}
+.region-switch__opt {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: background 0.15s, color 0.15s;
+}
+.region-switch__opt:hover { color: var(--text-mute); }
+.region-switch__opt.is-active { background: var(--blue-deep); color: #fff; }
+
+/* Precio: el total manda visualmente, el neto es la nota de apoyo. */
+.card__price-block { display: flex; flex-direction: column; gap: 1px; }
+
+/* El badge del App Store ocupa el ancho completo, asi que en las tarjetas
+   externas el precio va encima y no a un lado: en fila se encaman. */
+.card__footer--external { flex-direction: column; align-items: stretch; gap: 12px; }
+.card__price-note,
+.product-detail__price-note {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+.product-detail__price-note { display: block; margin-top: 2px; font-size: 0.85rem; }
+
+/* ---------------------------- Galeria ---------------------------- */
+
+.product-gallery__thumbs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+.product-gallery__thumb {
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg-3);
+  cursor: pointer;
+  overflow: hidden;
+  aspect-ratio: 1;
+  transition: border-color 0.15s;
+}
+.product-gallery__thumb img { width: 100%; height: 100%; object-fit: cover; }
+.product-gallery__thumb:hover { border-color: var(--line-2); }
+.product-gallery__thumb.is-active { border-color: var(--cyan); box-shadow: var(--shadow-glow); }
+
+.product-related { margin-top: 72px; }
+
+/* ------------------------ Metodos de pago ------------------------ */
+
+.pay-options { display: grid; gap: 10px; }
+.pay-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg-2);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.pay-option:hover { border-color: var(--line-2); }
+.pay-option input { margin-top: 3px; accent-color: var(--cyan); }
+.pay-option:has(input:checked) { border-color: var(--cyan); background: var(--bg-3); }
+.pay-option__body { display: flex; flex-direction: column; gap: 2px; }
+.pay-option__body small { color: var(--text-dim); font-size: 0.82rem; }
+
+.notice {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  font-size: 0.88rem;
+}
+.notice--customs { border-color: rgba(255, 179, 0, 0.35); background: rgba(255, 179, 0, 0.07); }
+.notice strong { display: block; margin-bottom: 4px; color: var(--warn); }
+.notice p { margin: 0; color: var(--text-mute); }
+
+.result__ref { color: var(--text-dim); font-size: 0.9rem; }
+
+@media (max-width: 760px) {
+  .region-switch__code { display: none; }
+  .region-switch__opt { padding: 4px 8px; }
+}
