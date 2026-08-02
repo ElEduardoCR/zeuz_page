@@ -15,9 +15,12 @@ exactos en las dos bases y son ademas lo que piden Stripe y Mercado Pago.
 """
 from __future__ import annotations
 
+import logging
 import os
 from pathlib import Path
 from typing import Any
+
+log = logging.getLogger(__name__)
 
 from sqlalchemy import (
     BigInteger,
@@ -108,7 +111,15 @@ def get_engine() -> Engine:
         # El servidor de Flask atiende en varios hilos; SQLite lo permite
         # mientras no compartamos una conexion entre ellos.
         kwargs["connect_args"] = {"check_same_thread": False}
-        Path(BASE_DIR / "data").mkdir(parents=True, exist_ok=True)
+        try:
+            Path(BASE_DIR / "data").mkdir(parents=True, exist_ok=True)
+        except OSError:
+            # En serverless el disco es de solo lectura salvo /tmp. Caer ahi
+            # mantiene la app en pie (el catalogo no toca la base) en vez de
+            # tumbar el sitio entero con un 500 en cada peticion. Los pedidos
+            # NO sobreviven entre invocaciones: esto es una red de seguridad
+            # para cuando falta DATABASE_URL, no un modo de operacion.
+            url = "sqlite:////tmp/zeuz-shop.db"
     else:
         # En serverless cada invocacion es un proceso efimero: un pool
         # persistente solo deja conexiones colgadas del lado de Postgres.
@@ -118,9 +129,33 @@ def get_engine() -> Engine:
     return _engine
 
 
-def init_db() -> None:
-    """Crea las tablas que falten. Idempotente."""
-    metadata.create_all(get_engine())
+_ready = False
+
+
+def init_db() -> bool:
+    """Crea las tablas que falten. Idempotente.
+
+    Devuelve si la base quedo utilizable en vez de lanzar. Un despliegue sin
+    DATABASE_URL debe seguir sirviendo el catalogo y solo negar el checkout;
+    lanzar aqui, en el import del modulo, tumbaria el sitio completo.
+    """
+    global _ready
+    try:
+        metadata.create_all(get_engine())
+        _ready = True
+    except Exception:  # noqa: BLE001 - cualquier fallo de conexion o de DDL
+        log.exception("Base de datos no disponible: el checkout quedara deshabilitado")
+        _ready = False
+    return _ready
+
+
+def is_ready() -> bool:
+    return _ready
+
+
+def is_persistent() -> bool:
+    """False cuando estamos sobre el SQLite efimero de /tmp."""
+    return _ready and not database_url().startswith("sqlite:////tmp")
 
 
 def is_sqlite() -> bool:

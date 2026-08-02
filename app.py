@@ -350,6 +350,17 @@ def api_checkout():
     region = g.region
     gateway = (data.get("gateway") or region.get("default_gateway") or "stripe").lower()
 
+    if not db.is_persistent():
+        # Sin base de datos no se puede tomar el pedido: cobrariamos sin
+        # guardar a donde enviarlo. Mejor negarlo que perder la venta y el
+        # dinero del cliente al mismo tiempo.
+        log.error("Intento de checkout sin base de datos persistente")
+        return jsonify({
+            "ok": False,
+            "error": "La tienda no puede procesar pagos en este momento. "
+                     "Escríbenos a %s y lo resolvemos." % os.environ.get("SUPPORT_EMAIL", "eduardo@voxa.mx"),
+        }), 503
+
     if gateway not in region.get("gateways", []):
         return jsonify({"ok": False, "error": "Metodo de pago no disponible en tu region"}), 400
 

@@ -71,17 +71,20 @@ fi
 
 echo "Cuenta: $(vercel whoami)"
 echo "Entorno destino: $TARGET"
+if [ -f .env.production ]; then
+  echo "Fuente: .env.production (con .env de respaldo)"
+else
+  echo "Fuente: .env"
+fi
 [ -n "$DRY_RUN" ] && echo "MODO PRUEBA: no se sube nada."
 echo
 
 # --- Sincronizacion ---------------------------------------------------------
 
-read_env_value() {
-  # Toma la ultima definicion de la variable en .env y le quita comillas
-  # envolventes si las trae.
-  local name="$1"
-  local line
-  line="$(grep -E "^${name}=" .env | tail -n 1 || true)"
+read_from_file() {
+  local name="$1" file="$2" line
+  [ -f "$file" ] || return 0
+  line="$(grep -E "^${name}=" "$file" | tail -n 1 || true)"
   [ -z "$line" ] && return 0
   local value="${line#*=}"
   value="${value%\"}"; value="${value#\"}"
@@ -89,15 +92,43 @@ read_env_value() {
   printf '%s' "$value"
 }
 
+read_env_value() {
+  # .env.production gana sobre .env. Sin esto subiriamos a produccion los
+  # valores de desarrollo: PUBLIC_BASE_URL vale localhost en local, y con ese
+  # valor el cliente paga y aterriza en una pagina que no existe.
+  local name="$1" value
+  value="$(read_from_file "$name" .env.production)"
+  [ -z "$value" ] && value="$(read_from_file "$name" .env)"
+  printf '%s' "$value"
+}
+
+# Valores que solo tienen sentido en desarrollo. Subirlos a produccion seria
+# peor que no subir nada: dejarian el panel con una contraseña conocida o las
+# URLs de retorno apuntando a localhost.
+es_valor_de_desarrollo() {
+  case "$1" in
+    *localhost*|*127.0.0.1*|zeuz-local-dev|*cambia-esta-clave*|dev-secret*|\
+    *TU_ACCESS_TOKEN*|*TU_PUBLIC_KEY*|sqlite:*) return 0 ;;
+  esac
+  return 1
+}
+
 subidas=0
 saltadas=0
+bloqueadas=0
 
 for name in "${VARS[@]}"; do
   value="$(read_env_value "$name")"
 
   if [ -z "$value" ]; then
-    printf '  · %-26s (vacia en .env, se salta)\n' "$name"
+    printf '  · %-26s (vacia, se salta)\n' "$name"
     saltadas=$((saltadas + 1))
+    continue
+  fi
+
+  if [ "$TARGET" = "production" ] && es_valor_de_desarrollo "$value"; then
+    printf '  ! %-26s BLOQUEADA: valor de desarrollo\n' "$name"
+    bloqueadas=$((bloqueadas + 1))
     continue
   fi
 
@@ -120,7 +151,13 @@ for name in "${VARS[@]}"; do
 done
 
 echo
-echo "Listas: $subidas · Saltadas por vacias: $saltadas"
+echo "Listas: $subidas · Vacias: $saltadas · Bloqueadas: $bloqueadas"
+
+if [ "$bloqueadas" -gt 0 ]; then
+  echo
+  echo "Las bloqueadas traen valores de desarrollo. Ponles un valor real de"
+  echo "produccion en .env.production (o en .env) y vuelve a correr esto."
+fi
 
 if [ -z "$DRY_RUN" ]; then
   echo

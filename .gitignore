@@ -7,6 +7,7 @@ __pycache__/
 
 # Config local
 .env
+.env.production
 *.local
 
 # Datos en runtime
