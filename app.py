@@ -71,6 +71,15 @@ log = app.logger
 
 PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "http://localhost:5001").rstrip("/")
 APP_STORE_URL = os.environ.get("APP_STORE_URL", "").strip()
+
+# Descargas de Zeuz Agent (el puente local que corre en la PC del taller). Los
+# binarios se publican en GitHub Releases; la ruta "latest/download" siempre
+# resuelve a la ultima version publicada, asi el enlace no cambia por version.
+AGENT_REPO_URL = "https://github.com/ElEduardoCR/zeuzagent"
+AGENT_RELEASES_URL = f"{AGENT_REPO_URL}/releases"
+AGENT_WINDOWS_URL = f"{AGENT_REPO_URL}/releases/latest/download/ZeuzAgent.exe"
+AGENT_MACOS_URL = f"{AGENT_REPO_URL}/releases/latest/download/ZeuzAgent-macOS.zip"
+
 REGION_COOKIE = "zeuz_region"
 REGION_COOKIE_MAX_AGE = 60 * 60 * 24 * 365
 
@@ -202,6 +211,17 @@ def index():
 @app.route("/catalogo")
 def catalog_page():
     return render_template("catalog.html", products=catalog.all_products(g.region))
+
+
+@app.route("/descargas")
+def downloads_page():
+    return render_template(
+        "descargas.html",
+        agent_windows_url=AGENT_WINDOWS_URL,
+        agent_macos_url=AGENT_MACOS_URL,
+        agent_releases_url=AGENT_RELEASES_URL,
+        agent_repo_url=AGENT_REPO_URL,
+    )
 
 
 @app.route("/producto/<product_id>")

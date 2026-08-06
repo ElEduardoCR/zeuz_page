@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Descargar Zeuz Agent — ZEUZ DNC{% endblock %}
+{% block description %}Descarga Zeuz Agent para Windows y macOS: el puente local que publica la carpeta de programas CNC de tu PC al ecosistema ZEUZ.{% endblock %}
+
+{% block content %}
+<section class="dl-hero">
+  <div class="container">
+    <div class="section-kicker section-kicker--left">Zeuz Agent · Puente local para tu PC</div>
+    <h1 class="section-title" style="text-align:left">Instala el agente. <span class="accent">Conecta tu carpeta.</span></h1>
+    <p class="dl-lede">Zeuz Agent corre en la computadora del taller y publica tu carpeta de programas CNC como un servicio local seguro. Así iZEUZ y tu dispositivo ZEUZ DNC pueden ver, editar y enviar tus programas sin mover archivos a mano.</p>
+    <p class="dl-reco" id="dlReco" hidden></p>
+  </div>
+</section>
+
+<section class="downloads">
+  <div class="container">
+    <div class="dl-grid">
+      <article class="dl-card" id="card-win">
+        <span class="dl-badge" hidden>Recomendado para tu equipo</span>
+        <div class="dl-card__os">
+          <svg class="dl-os-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3 5.5 10.6 4.4v7.05H3V5.5Zm8.4-1.24L21 3v8.45h-9.6V4.26ZM3 12.55h7.6v7.05L3 18.5v-5.95Zm8.4 0H21V21l-9.6-1.35v-7.1Z"/></svg>
+        </div>
+        <h2>Windows</h2>
+        <p class="dl-card__meta">Windows 10 u 11 · 64 bits</p>
+        <a class="btn btn--primary btn--lg btn--block" href="{{ agent_windows_url }}">Descargar para Windows</a>
+        <p class="dl-card__file">ZeuzAgent.exe · instalación no requerida</p>
+      </article>
+
+      <article class="dl-card" id="card-mac">
+        <span class="dl-badge" hidden>Recomendado para tu equipo</span>
+        <div class="dl-card__os">
+          <svg class="dl-os-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.365 1.43c0 1.14-.42 2.2-1.12 2.99-.76.85-2 .17-1.98-1.02.03-1.02.5-2.02 1.16-2.72C15.09-.02 16.3.38 16.365 1.43ZM20.5 17.06c-.36.83-.53 1.2-.99 1.94-.64 1.03-1.54 2.3-2.66 2.31-.99.01-1.25-.65-2.6-.64-1.35.01-1.63.66-2.62.65-1.12-.01-1.98-1.16-2.62-2.19-1.79-2.87-1.98-6.24-.87-8.03.78-1.28 2.02-2.03 3.18-2.03 1.18 0 1.92.66 2.9.66.95 0 1.53-.66 2.9-.66 1.03 0 2.12.56 2.9 1.53-2.55 1.4-2.13 5.04.48 6.28Z"/></svg>
+        </div>
+        <h2>macOS</h2>
+        <p class="dl-card__meta">Mac con Apple Silicon (M1 o posterior)</p>
+        <a class="btn btn--primary btn--lg btn--block" href="{{ agent_macos_url }}">Descargar para Mac</a>
+        <p class="dl-card__file">ZeuzAgent-macOS.zip · descomprime y abre</p>
+      </article>
+    </div>
+
+    <p class="dl-other">
+      ¿Otra versión o Linux? <a class="link-arrow" href="{{ agent_releases_url }}" target="_blank" rel="noopener">Ver todas las versiones en GitHub →</a>
+    </p>
+  </div>
+</section>
+
+<section class="dl-notes-wrap">
+  <div class="container">
+    <div class="section-kicker section-kicker--left">Antes de abrirlo</div>
+    <h2 class="section-title" style="text-align:left">La primera vez, el sistema <span class="accent">pedirá confirmar.</span></h2>
+    <p class="dl-lede">Zeuz Agent aún no está firmado con un certificado comercial, así que Windows y macOS muestran un aviso la primera vez. Es normal; solo hay que permitirlo una vez.</p>
+    <div class="dl-notes">
+      <article class="dl-note">
+        <h3>En Windows</h3>
+        <p>Al abrir el <code>.exe</code>, si aparece “Windows protegió tu PC”, pulsa <strong>Más información</strong> y luego <strong>Ejecutar de todas formas</strong>.</p>
+      </article>
+      <article class="dl-note">
+        <h3>En Mac</h3>
+        <p>Descomprime el <code>.zip</code>, mueve <strong>Zeuz Agent</strong> a Aplicaciones y ábrelo con <strong>clic derecho → Abrir → Abrir</strong>. Si se bloquea, ve a <strong>Ajustes → Privacidad y seguridad → Abrir de todas formas</strong>.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="dl-what">
+  <div class="container">
+    <div class="dl-what__grid">
+      <div>
+        <div class="section-kicker section-kicker--left">Qué hace el agente</div>
+        <h2 class="section-title" style="text-align:left">Tu carpeta de programas, <span class="accent">disponible en la red.</span></h2>
+        <ul class="check-list">
+          <li>Publica tu carpeta CNC como una API local en el puerto <strong>47820</strong>.</li>
+          <li>Se anuncia por Bonjour/mDNS para que iZEUZ lo encuentre solo.</li>
+          <li>Emparejamiento con código: nadie entra sin autorizar.</li>
+          <li>Ver, buscar, editar, crear y enviar programas desde el iPhone o el dispositivo ZEUZ DNC.</li>
+          <li>Vive en la bandeja del sistema y puede iniciar con la computadora.</li>
+        </ul>
+      </div>
+      <div class="dl-steps">
+        <div class="dl-step"><span class="dl-step__n">1</span><div><h3>Instala</h3><p>Descarga y abre Zeuz Agent en la PC donde están tus programas.</p></div></div>
+        <div class="dl-step"><span class="dl-step__n">2</span><div><h3>Elige la carpeta</h3><p>Apunta el agente a tu carpeta de programas CNC.</p></div></div>
+        <div class="dl-step"><span class="dl-step__n">3</span><div><h3>Empareja</h3><p>Abre iZEUZ o ZEUZ DNC y escribe el código que muestra el agente.</p></div></div>
+        <div class="dl-step"><span class="dl-step__n">4</span><div><h3>Listo</h3><p>Ya puedes trabajar tus programas desde el teléfono o la máquina.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Resalta la tarjeta del sistema operativo del visitante. Es solo una
+  // sugerencia visual: ambas descargas quedan siempre disponibles.
+  (function () {
+    var ua = (navigator.userAgent || "") + " " + (navigator.platform || "");
+    var isWin = /Windows|Win64|Win32/i.test(ua);
+    var isMac = /Mac|Macintosh|Mac OS X/i.test(ua) && !/iPhone|iPad|iPod/i.test(ua);
+    var id = isWin ? "card-win" : (isMac ? "card-mac" : null);
+    if (!id) return;
+    var card = document.getElementById(id);
+    if (!card) return;
+    card.classList.add("is-recommended");
+    var badge = card.querySelector(".dl-badge");
+    if (badge) badge.hidden = false;
+    var reco = document.getElementById("dlReco");
+    if (reco) {
+      reco.textContent = "Detectamos que usas " + (isWin ? "Windows" : "Mac") +
+        ". Te recomendamos la descarga marcada abajo.";
+      reco.hidden = false;
+    }
+  })();
+</script>
+{% endblock %}
