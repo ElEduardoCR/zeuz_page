@@ -5,32 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% block title %}ZEUZ DNC — Tu taller conectado{% endblock %}</title>
   <meta name="description" content="{% block description %}ZEUZ DNC transfiere programas a máquinas CNC por RS232 y se controla de forma inalámbrica desde iPhone y iPad con iZEUZ.{% endblock %}" />
-  <meta name="theme-color" content="#07111f" />
-
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <meta name="theme-color" content="#F5F7FA" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0B111A" media="(prefers-color-scheme: dark)" />
 
   <link rel="stylesheet" href="{{ url_for('static', filename='css/shop.css') }}" />
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/design.css') }}" />
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='brand/favicon.png') }}" />
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='brand/apple-touch-icon.png') }}" />
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Saltar al contenido</a>
   <header class="topbar">
     <div class="topbar__inner">
       <a href="{{ url_for('index') }}" class="brand">
-        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="ZEUZ DNC" class="brand__logo" />
         <div class="brand__text">
-          <span class="brand__name">ZEUZ DNC</span>
+          <picture class="brand__lockup">
+            <source media="(prefers-color-scheme: dark)" srcset="{{ url_for('static', filename='brand/dnc-dark.svg') }}" />
+            <img src="{{ url_for('static', filename='brand/dnc-light.svg') }}" alt="ZEUZ DNC" width="172" height="44" />
+          </picture>
           <span class="brand__tag">Tecnología para CNC</span>
         </div>
       </a>
-      <nav class="nav">
-        <a href="{{ url_for('index') }}">Inicio</a>
-        <a href="{{ url_for('catalog_page') }}">Catálogo</a>
-        <a href="{{ url_for('index') }}#soluciones">Soluciones</a>
-        <a href="{{ url_for('downloads_page') }}">Descargas</a>
-        <a href="{{ url_for('index') }}#como-funciona">Cómo funciona</a>
-        <a href="{{ url_for('index') }}#contacto">Contacto</a>
+      <nav class="nav" aria-label="Navegación principal">
+        <a href="{{ url_for('index') }}#soluciones">El sistema</a>
+        <a href="{{ url_for('catalog_page') }}" {% if request.endpoint == 'catalog_page' %}aria-current="page"{% endif %}>Catálogo</a>
+        <a href="{{ url_for('downloads_page') }}" {% if request.endpoint == 'downloads_page' %}aria-current="page"{% endif %}>Descargas</a>
+        <a href="{{ url_for('index') }}#contacto">Soporte</a>
       </nav>
       <div class="topbar__actions">
         <div class="region-switch" aria-label="Región de envío">
@@ -53,17 +53,39 @@
           <span class="cart-btn__count" id="cart-count">0</span>
         </a>
       </div>
+      <details class="mobile-menu">
+        <summary aria-label="Menú de navegación"><span></span><span></span></summary>
+        <nav class="mobile-menu__panel" aria-label="Navegación móvil">
+          <a href="{{ url_for('index') }}">Inicio</a>
+          <a href="{{ url_for('index') }}#soluciones">El sistema</a>
+          <a href="{{ url_for('catalog_page') }}">Catálogo</a>
+          <a href="{{ url_for('downloads_page') }}">Descargas</a>
+          <a href="{{ url_for('index') }}#como-funciona">Cómo funciona</a>
+          <a href="{{ url_for('index') }}#contacto">Soporte y contacto</a>
+          <div class="mobile-menu__regions">
+            <span>Región de envío</span>
+            {% for code, region in regions.items() %}
+              <a href="{{ url_for('set_region', code=code, next=request.path) }}" {% if code == store.region %}aria-current="true"{% endif %}>{{ region.label }} · {{ region.currency }}</a>
+            {% endfor %}
+          </div>
+        </nav>
+      </details>
     </div>
   </header>
 
-  <main>
+  <main id="main-content" tabindex="-1">
     {% block content %}{% endblock %}
   </main>
 
   <footer class="footer" id="contacto">
     <div class="footer__inner">
       <div class="footer__col">
-        <div class="footer__brand">ZEUZ DNC</div>
+        <div class="footer__brand">
+          <picture class="brand__lockup">
+            <source media="(prefers-color-scheme: dark)" srcset="{{ url_for('static', filename='brand/dnc-dark.svg') }}" />
+            <img src="{{ url_for('static', filename='brand/dnc-light.svg') }}" alt="ZEUZ DNC" width="172" height="44" />
+          </picture>
+        </div>
         <p>La forma simple de llevar programas CNC del teléfono o la red del taller hasta tu máquina.</p>
       </div>
       <div class="footer__col">
@@ -92,6 +114,7 @@
     window.__STORE__ = {{ store|tojson }};
   </script>
   {% block scripts %}{% endblock %}
+  <script src="{{ url_for('static', filename='js/navigation.js') }}"></script>
   <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
   <script src="{{ url_for('static', filename='js/shop.js') }}"></script>
 </body>

@@ -12,9 +12,9 @@
 
 <section class="container catalog-page">
   <div class="catalog-tools" aria-label="Filtrar productos">
-    <button type="button" class="catalog-filter is-active" data-filter="all">Todo</button>
-    <button type="button" class="catalog-filter" data-filter="dispositivo">Dispositivo</button>
-    <button type="button" class="catalog-filter" data-filter="software">iZEUZ</button>
+    <button type="button" class="catalog-filter is-active" aria-pressed="true" data-filter="all">Todo</button>
+    <button type="button" class="catalog-filter" aria-pressed="false" data-filter="dispositivo">Dispositivo</button>
+    <button type="button" class="catalog-filter" aria-pressed="false" data-filter="software">iZEUZ</button>
   </div>
   <div class="products-grid" id="catalog-grid">
     {% for p in products %}
@@ -30,7 +30,10 @@
     const button = event.target.closest('[data-filter]');
     if (!button) return;
     const filter = button.dataset.filter;
-    document.querySelectorAll('.catalog-filter').forEach((item) => item.classList.toggle('is-active', item === button));
+    document.querySelectorAll('.catalog-filter').forEach((item) => {
+      item.classList.toggle('is-active', item === button);
+      item.setAttribute('aria-pressed', String(item === button));
+    });
     document.querySelectorAll('#catalog-grid .card').forEach((card) => {
       card.hidden = filter !== 'all' && card.dataset.category !== filter;
     });

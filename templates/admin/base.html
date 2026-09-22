@@ -6,12 +6,12 @@
   <title>{% block title %}Pedidos{% endblock %} · ZEUZ DNC</title>
   <meta name="robots" content="noindex, nofollow" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}" />
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}" />
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='brand/favicon.png') }}" />
 </head>
 <body>
   <header class="a-top">
     <a class="a-top__brand" href="{{ url_for('admin.orders_list') }}">
-      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="" />
+      <img src="{{ url_for('static', filename='brand/z-dark.svg') }}" alt="" />
       <span>ZEUZ DNC · Pedidos</span>
     </a>
     <div class="a-top__right">

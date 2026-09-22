@@ -34,6 +34,9 @@
   }
   function updateBadge() {
     const total = count();
+    document.querySelectorAll('.cart-btn').forEach((el) => {
+      el.setAttribute('aria-label', total > 0 ? `Carrito, ${total} ${total === 1 ? 'producto' : 'productos'}` : 'Carrito');
+    });
     document.querySelectorAll('#cart-count, .cart-btn__count').forEach((el) => {
       el.textContent = total > 0 ? String(total) : '';
       if (total === 0) el.setAttribute('data-empty', 'true');

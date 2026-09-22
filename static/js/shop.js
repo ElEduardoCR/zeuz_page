@@ -125,7 +125,7 @@
           <p class="cart-item__short">${escapeHtml(p.short)}</p>
           <div class="qty" style="margin-top: 8px;">
             <button class="qty__btn" data-action="dec" data-id="${p.id}" aria-label="Restar">−</button>
-            <input type="number" min="1" max="99" value="${it.qty}" data-id="${p.id}" class="cart-item__qty-input" />
+            <input type="number" min="1" max="99" value="${it.qty}" data-id="${p.id}" class="cart-item__qty-input" aria-label="Cantidad de ${escapeHtml(p.name)}" />
             <button class="qty__btn" data-action="inc" data-id="${p.id}" aria-label="Sumar">+</button>
           </div>
         </div>

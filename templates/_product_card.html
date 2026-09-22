@@ -5,6 +5,7 @@
     <img src="{{ url_for('static', filename=p.image) }}" alt="{{ p.name }}" loading="lazy" />
   </a>
   <div class="card__body">
+    {% if p.id == 'zeuzdnc-headless' %}<span class="card__image-note">Imagen de referencia: versión con pantalla</span>{% endif %}
     <h3 class="card__title">
       <a href="{{ url_for('product_page', product_id=p.id) }}">{{ p.name }}</a>
     </h3>
@@ -24,7 +25,7 @@
           {% endif %}
         </div>
         {% if p.stock > 0 %}
-          <button type="button" class="btn btn--primary btn--sm js-add-to-cart" data-id="{{ p.id }}">Añadir</button>
+          <button type="button" class="btn btn--primary btn--sm js-add-to-cart" data-id="{{ p.id }}" aria-label="Añadir {{ p.name }} al carrito">Añadir</button>
         {% else %}
           <span class="card__soldout">Agotado</span>
         {% endif %}

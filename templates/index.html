@@ -1,135 +1,79 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section class="hero">
-  <img class="hero__photo" src="{{ url_for('static', filename='img/zeuzdnc-workshop-operator.jpg') }}" alt="Operador ficticio usando ZEUZ DNC en una estación CNC" />
-  <div class="hero__shade"></div>
-  <div class="hero__inner">
-    <div class="hero__copy">
-      <span class="hero__eyebrow">Transferencia DNC · RS232 + conexión inalámbrica</span>
-      <h1 class="hero__title">Tu programa.<br /><span class="accent">Tu máquina.</span><br />Sin rodeos.</h1>
-      <p class="hero__lede">ZEUZ DNC transfiere programas directamente a tus máquinas CNC por RS232. Con iZEUZ también puedes hacerlo de forma inalámbrica desde tu iPhone o iPad.</p>
-      <div class="hero__cta">
-        <a href="{{ url_for('catalog_page') }}" class="btn btn--primary btn--lg">Comprar ZEUZ</a>
-        <a href="#soluciones" class="btn btn--glass btn--lg">Conocer el sistema</a>
+<section class="intro" aria-labelledby="intro-title">
+  <div class="container intro__grid">
+    <div class="intro__copy">
+      <p class="eyebrow"><span aria-hidden="true"></span> Tecnología para tu taller</p>
+      <h1 id="intro-title">Tu programa.<br>Tu máquina.<br><span class="accent">Conectados.</span></h1>
+      <p class="intro__lede">Lleva tus programas a la máquina CNC con ZEUZ DNC. La conexión RS232 de siempre, con una forma más simple de trabajar.</p>
+      <div class="intro__actions">
+        <a href="{{ url_for('catalog_page') }}" class="btn btn--primary btn--lg">Explorar equipos <span aria-hidden="true">↗</span></a>
+        <a href="#como-funciona" class="intro__link">Así funciona <span aria-hidden="true">↓</span></a>
       </div>
-      <div class="hero__proof" aria-label="Beneficios principales">
-        <span><strong>10 min</strong> para comenzar</span>
-        <span><strong>RS232</strong> listo para CNC</span>
-        <span><strong>Envíos</strong> a México y EE.&nbsp;UU.</span>
-      </div>
+      <p class="intro__footnote">En tu máquina. En tu red. Desde tu iPhone.</p>
     </div>
+    <figure class="device-stage">
+      <div class="device-stage__label"><span>ZEUZ DNC</span><span>RS232 / CNC</span></div>
+      <img src="{{ url_for('static', filename='img/product-zeuzdnc-device.jpg') }}" alt="ZEUZ DNC con pantalla táctil y conexión serial RS232" width="1448" height="1086" fetchpriority="high">
+      <figcaption class="device-stage__caption">
+        <div><span>Junto a tu máquina.</span><strong>Todo bajo control.</strong></div>
+        <a class="glass-link" href="{{ url_for('product_page', product_id='zeuzdnc-touch') }}" aria-label="Conocer ZEUZ DNC con pantalla táctil"><span aria-hidden="true">↗</span></a>
+      </figcaption>
+    </figure>
   </div>
 </section>
 
-<section class="trust-strip" aria-label="Compatibilidad">
-  <div class="container trust-strip__inner">
-    <span>Compatible con</span><strong>FANUC</strong><strong>FADAL</strong><strong>HAAS</strong><strong>SIEMENS</strong><strong>RS232</strong>
-  </div>
+<section class="connection container" aria-labelledby="connection-title">
+  <div class="connection__intro"><p class="eyebrow">Una conexión que tiene sentido</p><h2 id="connection-title">Del archivo <br>a la máquina.</h2></div>
+  <ol class="connection__route">
+    <li><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5" y="5" width="22" height="16" rx="2"/><path d="M2 26h28M12 21v5m8-5v5"/></svg><strong>Tu computadora</strong><span>Programas CNC</span></li>
+    <li class="connection__line" aria-hidden="true"><span>RED LOCAL</span><i></i></li>
+    <li><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="5" width="26" height="20" rx="3"/><path d="M8 10h16v10H8zM8 28h16"/></svg><strong>ZEUZ DNC</strong><span>Con o sin pantalla</span></li>
+    <li class="connection__line" aria-hidden="true"><span>RS232</span><i></i></li>
+    <li><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="26" height="26" rx="2"/><path d="M7 8h12v16H7zM23 8h2m-2 5h2M11 8v6l2 3 2-3V8M7 21h12"/></svg><strong>Tu máquina</strong><span>Control CNC</span></li>
+  </ol>
 </section>
 
-<section class="solutions" id="soluciones">
+<section class="system-section" id="soluciones">
   <div class="container">
-    <div class="section-kicker">Dos formas de trabajar. Un mismo flujo.</div>
-    <h2 class="section-title">ZEUZ en la máquina. <span class="accent">iZEUZ en tu bolsillo.</span></h2>
-    <div class="solutions__grid">
-      <article class="solution-card solution-card--device">
-        <div class="solution-card__content">
-          <span class="solution-card__label">Dispositivo DNC</span>
-          <h3>ZEUZ DNC</h3>
-          <p>Administra, edita y transfiere programas junto a tus máquinas CNC. Disponible con pantalla táctil de 7" o sin pantalla, para operarlo desde iZEUZ o desde la red del taller.</p>
-          <ul class="check-list"><li>Editor con búsqueda y reemplazo</li><li>Perfiles seriales por máquina</li><li>Estado y progreso de transferencia</li></ul>
-          <a href="{{ url_for('product_page', product_id='zeuzdnc-touch') }}" class="link-arrow">Ver dispositivo ZEUZ DNC →</a>
-        </div>
-        <div class="mini-ui mini-ui--desktop" aria-label="Representación de la interfaz ZEUZ DNC">
-          <div class="mini-ui__bar"><span>ZEUZ DNC</span><i></i></div>
-          <div class="mini-ui__cols"><div><b>Programas</b><span>O1001.NC</span><span>PIEZA_A.NC</span><span>TORNO_04.NC</span></div><div><b>Editor</b><code>N10 G90 G54</code><code>N20 G00 X0 Y0</code><code>N30 M03 S1200</code></div><div><b>Envío</b><span>Fanuc 0i</span><span>USB · RS232</span><button>ENVIAR</button></div></div>
-        </div>
+    <div class="section-heading"><p class="eyebrow">El ecosistema ZEUZ</p><h2>Tu taller, conectado.<br><span class="muted">A tu manera.</span></h2><p>Elige dónde trabajar. ZEUZ DNC se encarga de la conexión con tu máquina.</p></div>
+    <div class="system-grid">
+      <article class="system-card system-card--device">
+        <span class="system-card__eyebrow">EN LA MÁQUINA</span><h3>ZEUZ DNC.</h3><p>Administra, edita y transfiere programas junto al control CNC. Con pantalla táctil de 7″ o sin pantalla, para operarlo desde la red del taller.</p>
+        <ul class="check-list"><li>Editor con búsqueda y reemplazo</li><li>Perfiles seriales por máquina</li><li>Estado y progreso de transferencia</li></ul>
+        <a class="link-arrow" href="{{ url_for('product_page', product_id='zeuzdnc-touch') }}">Conoce el dispositivo <span aria-hidden="true">↗</span></a>
+        <div class="program-preview" role="img" aria-label="Ejemplo ilustrativo de un programa CNC, no es una transferencia en curso"><div><span>PROGRAMA CNC</span><span>O1001.NC</span></div><code><span>N10</span> G90 G54<br><span>N20</span> G00 X0 Y0<br><span>N30</span> M03 S1200</code><p>Selecciona. Revisa. Confirma.</p></div>
       </article>
-
-      <article class="solution-card solution-card--ios">
-        <img src="{{ url_for('static', filename='img/izeuz-mobile-engineer.jpg') }}" alt="Ingeniera ficticia usando iZEUZ en iPhone junto a un torno CNC" loading="lazy" />
-        <div class="solution-card__overlay"></div>
-        <div class="solution-card__content">
-          <span class="solution-card__label">App para iPhone y iPad</span>
-          <h3>iZEUZ</h3>
-          <p>Elige, edita y envía programas desde iPhone o iPad. iZEUZ se conecta de forma inalámbrica con tu dispositivo ZEUZ DNC.</p>
-          <p class="solution-card__note">El teléfono permanece inalámbrico; ZEUZ DNC realiza la transferencia RS232 a la máquina.</p>
-          {% include "_app_store_badge.html" %}
-        </div>
+      <article class="system-card system-card--mobile">
+        <img src="{{ url_for('static', filename='img/izeuz-mobile-engineer.jpg') }}" alt="Escena ilustrativa: operadora con iPhone junto a una máquina CNC" loading="lazy">
+        <div class="system-card__mobile-copy"><span class="system-card__eyebrow">EN TU IPHONE Y IPAD</span><h3><img src="{{ url_for('static', filename='brand/z-dark.svg') }}" alt="" width="34" height="34" style="vertical-align:middle;margin-right:8px">iZEUZ. Más cerca.</h3><p>Elige, edita y envía programas de forma inalámbrica. Tu dispositivo ZEUZ DNC realiza la transferencia RS232 a la máquina.</p>{% include "_app_store_badge.html" %}</div>
       </article>
+      <article class="agent-strip"><div class="agent-strip__icon" aria-hidden="true">⌘</div><div><p class="eyebrow">EN TU COMPUTADORA</p><h3>Tu carpeta. El punto de partida.</h3><p>Zeuz Agent conecta tus programas con el ecosistema ZEUZ desde Windows o Mac.</p></div><a class="btn btn--ghost" href="{{ url_for('downloads_page') }}">Descargar Agent <span aria-hidden="true">↓</span></a></article>
     </div>
   </div>
 </section>
 
-<section class="features">
+<section class="equipment-section">
   <div class="container">
-    <div class="section-kicker">Hecho para el piso de producción</div>
-    <h2 class="section-title">Menos fricción. <span class="accent">Más piezas.</span></h2>
-    <div class="features__grid">
-      <article class="feature">
-        <h3>Listo en 10 minutos</h3>
-        <p>Conecta ZEUZ DNC a la red del taller y al puerto RS232 de tu máquina.</p>
-      </article>
-      <article class="feature">
-        <h3>Control a la vista</h3>
-        <p>Archivo, máquina, puerto y progreso permanecen visibles antes de enviar.</p>
-      </article>
-      <article class="feature">
-        <h3>Configurable por máquina</h3>
-        <p>Baudrate, paridad, bits, flujo y terminador guardados en cada perfil.</p>
-      </article>
-      <article class="feature">
-        <h3>Envío consciente</h3>
-        <p>Nunca transmite solo: archivo guardado, máquina elegida y confirmación manual.</p>
-      </article>
-    </div>
-  </div>
-</section>
-
-<section class="featured">
-  <div class="container">
-    <div class="featured__head">
-      <div><div class="section-kicker section-kicker--left">Arma tu conexión</div><h2 class="section-title">Lo más <span class="accent">pedido</span></h2></div>
-      <a href="{{ url_for('catalog_page') }}" class="link-arrow">Ver todo →</a>
-    </div>
-    <div class="products-grid">
-      {% for p in products %}
-        {% include "_product_card.html" %}
-      {% endfor %}
-    </div>
+    <div class="featured__head"><div><p class="eyebrow">Encuentra tu ZEUZ</p><h2>La misma conexión.<br>Tu forma de trabajar.</h2></div><a href="{{ url_for('catalog_page') }}" class="link-arrow">Ver catálogo <span aria-hidden="true">↗</span></a></div>
+    <div class="products-grid">{% for p in products %}{% include "_product_card.html" %}{% endfor %}</div>
+    <p class="equipment-note">Precios en {{ store.currency }}. El costo de envío se muestra antes de pagar.</p>
   </div>
 </section>
 
 <section class="howto" id="como-funciona">
   <div class="container">
-    <div class="section-kicker">De tu carpeta al control CNC</div>
-    <h2 class="section-title">Cuatro pasos. <span class="accent">Cero vueltas.</span></h2>
+    <div class="section-heading"><p class="eyebrow">Así funciona</p><h2>Del programa a la producción.<br><span class="muted">Paso a paso.</span></h2></div>
     <ol class="howto__steps">
-      <li>
-        <span class="howto__num">1</span>
-        <h3>Conecta</h3>
-        <p>Conecta el dispositivo ZEUZ DNC a tu red y al puerto RS232 del control CNC.</p>
-      </li>
-      <li>
-        <span class="howto__num">2</span>
-        <h3>Carga</h3>
-        <p>Guarda tus archivos NC desde Windows o Mac en la carpeta compartida.</p>
-      </li>
-      <li>
-        <span class="howto__num">3</span>
-        <h3>Elige</h3>
-        <p>Selecciona el programa en ZEUZ DNC o iZEUZ y confirma el perfil de máquina.</p>
-      </li>
-      <li>
-        <span class="howto__num">4</span>
-        <h3>Envía</h3>
-        <p>Presiona <strong>ENVIAR</strong>. ZEUZ DNC transmite con la configuración serial correcta.</p>
-      </li>
+      <li><span class="howto__num">01</span><h3>Conecta.</h3><p>Conecta ZEUZ DNC a tu red y al puerto RS232 del control CNC.</p></li>
+      <li><span class="howto__num">02</span><h3>Carga.</h3><p>Guarda tus archivos NC desde Windows o Mac en la carpeta compartida.</p></li>
+      <li><span class="howto__num">03</span><h3>Revisa.</h3><p>Elige el programa en ZEUZ DNC o iZEUZ y confirma el perfil de la máquina.</p></li>
+      <li><span class="howto__num">04</span><h3>Envía.</h3><p>Confirma el envío. ZEUZ DNC transmite con la configuración serial seleccionada.</p></li>
     </ol>
+    <p class="howto__note">Cada control es diferente. Confirma baudrate, paridad y flujo en el manual de tu máquina.</p>
   </div>
 </section>
-
 <section class="faq" id="preguntas">
   <div class="container container--narrow">
     <h2 class="section-title">Preguntas <span class="accent">frecuentes</span></h2>
@@ -164,10 +108,6 @@
   </div>
 </section>
 
-<section class="final-cta">
-  <div class="container final-cta__inner">
-    <div><div class="section-kicker section-kicker--left">Actualiza tu flujo DNC</div><h2>Todo lo que necesitas para volver a producir.</h2><p>El dispositivo ZEUZ DNC, iZEUZ para iPhone y iPad, adaptadores y cables seriales para tu instalación.</p></div>
-    <a href="{{ url_for('catalog_page') }}" class="btn btn--primary btn--lg">Ver catálogo completo</a>
-  </div>
-</section>
+
+<section class="contact-banner"><div class="container contact-banner__inner"><div><p class="eyebrow">Hablemos de tu taller</p><h2>La conexión empieza aquí.</h2><p>Conoce el equipo o resuelve tus dudas antes de elegir.</p></div><a class="btn btn--primary btn--lg" href="mailto:{{ support_email }}">Contactar a ZEUZ <span aria-hidden="true">↗</span></a></div></section>
 {% endblock %}
