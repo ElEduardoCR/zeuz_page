@@ -27,6 +27,7 @@ Administracion
 """
 from __future__ import annotations
 
+import json
 import logging
 import os
 from decimal import ROUND_HALF_UP, Decimal
@@ -62,6 +63,9 @@ app = Flask(
     template_folder=str(BASE_DIR / "templates"),
 )
 app.secret_key = os.environ.get("FLASK_SECRET", "dev-secret-change-me")
+# La tienda se puede explorar antes de conectar Stripe. Tener credenciales
+# antiguas en el entorno no activa los cobros sin este opt-in explícito.
+app.config["PAYMENTS_ENABLED"] = os.environ.get("PAYMENTS_ENABLED", "false").strip().lower() == "true"
 
 logging.basicConfig(
     level=logging.INFO,
@@ -73,12 +77,23 @@ PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "http://localhost:5001").rst
 APP_STORE_URL = os.environ.get("APP_STORE_URL", "").strip()
 
 # Descargas de Zeuz Agent (el puente local que corre en la PC del taller). Los
-# binarios se publican en GitHub Releases; la ruta "latest/download" siempre
-# resuelve a la ultima version publicada, asi el enlace no cambia por version.
+# binarios se publican en GitHub Releases. El manifiesto fija una versión para
+# que el archivo, tamaño y checksum visibles siempre correspondan entre sí.
 AGENT_REPO_URL = "https://github.com/ElEduardoCR/zeuzagent"
 AGENT_RELEASES_URL = f"{AGENT_REPO_URL}/releases"
-AGENT_WINDOWS_URL = f"{AGENT_REPO_URL}/releases/latest/download/ZeuzAgent.exe"
-AGENT_MACOS_URL = f"{AGENT_REPO_URL}/releases/latest/download/ZeuzAgent-macOS.zip"
+DOWNLOADS = json.loads((BASE_DIR / "data" / "downloads.json").read_text(encoding="utf-8"))
+
+
+def download_catalog() -> List[Dict[str, Any]]:
+    """Datos públicos de los archivos con rutas estables de la tienda."""
+    return [
+        {
+            **item,
+            "url": url_for("download_file", download_id=item["id"]),
+            "checksum_url": url_for("download_checksum", download_id=item["id"]),
+        }
+        for item in DOWNLOADS
+    ]
 
 REGION_COOKIE = "zeuz_region"
 REGION_COOKIE_MAX_AGE = 60 * 60 * 24 * 365
@@ -125,7 +140,10 @@ def resolve_region() -> None:
     # Ofrecer solo las pasarelas que de verdad tienen credenciales. Sin este
     # filtro, una region que lista Mercado Pago sin token configurado le
     # muestra la opcion al cliente y revienta al pulsar pagar.
-    available = {"stripe": payments_stripe.is_configured(), "mercadopago": payments_mp.is_configured()}
+    available = {
+        "stripe": app.config["PAYMENTS_ENABLED"] and payments_stripe.is_configured(),
+        "mercadopago": app.config["PAYMENTS_ENABLED"] and payments_mp.is_configured(),
+    }
     region["gateways"] = [gw for gw in region.get("gateways", []) if available.get(gw)]
     if region.get("default_gateway") not in region["gateways"]:
         region["default_gateway"] = region["gateways"][0] if region["gateways"] else None
@@ -139,8 +157,11 @@ def inject_globals() -> Dict[str, Any]:
     import datetime
 
     region = getattr(g, "region", None) or catalog.get_region(None)
+    store = catalog.storefront_config(region)
+    store["payments_enabled"] = app.config["PAYMENTS_ENABLED"]
     return {
-        "store": catalog.storefront_config(region),
+        "store": store,
+        "payments_enabled": app.config["PAYMENTS_ENABLED"],
         "regions": catalog.all_regions(),
         "app_store_url": APP_STORE_URL,
         "support_email": os.environ.get("SUPPORT_EMAIL", "eduardo@voxa.mx"),
@@ -204,11 +225,12 @@ def set_region(code: str):
 
 @app.route("/")
 def index():
-    products = [p for p in catalog.all_products(g.region) if not p.get("external")][:3]
+    products = catalog.all_products(g.region)[:3]
     return render_template("index.html", products=products)
 
 
 @app.route("/catalogo")
+@app.route("/tienda")
 def catalog_page():
     return render_template("catalog.html", products=catalog.all_products(g.region))
 
@@ -217,11 +239,36 @@ def catalog_page():
 def downloads_page():
     return render_template(
         "descargas.html",
-        agent_windows_url=AGENT_WINDOWS_URL,
-        agent_macos_url=AGENT_MACOS_URL,
+        downloads=download_catalog(),
+        agent_windows_url=url_for("download_file", download_id="agent-windows"),
+        agent_macos_url=url_for("download_file", download_id="agent-macos"),
         agent_releases_url=AGENT_RELEASES_URL,
         agent_repo_url=AGENT_REPO_URL,
     )
+
+
+@app.route("/descargas/<download_id>")
+def download_file(download_id: str):
+    # El visitante solo puede elegir un ID publicado. No se aceptan URLs ni
+    # rutas del cliente, y los binarios se sirven desde su publicación oficial.
+    item = next((item for item in DOWNLOADS if item["id"] == download_id), None)
+    if item is None:
+        abort(404)
+    response = redirect(item["download_url"], code=302)
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@app.route("/descargas/<download_id>/sha256")
+def download_checksum(download_id: str):
+    item = next((item for item in DOWNLOADS if item["id"] == download_id), None)
+    if item is None:
+        abort(404)
+    response = make_response(f'{item["sha256"]}  {item["filename"]}\n')
+    response.headers["Content-Type"] = "text/plain; charset=utf-8"
+    response.headers["Content-Disposition"] = f'attachment; filename="{item["filename"]}.sha256"'
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    return response
 
 
 @app.route("/producto/<product_id>")
@@ -374,6 +421,12 @@ def api_quote():
 @app.route("/api/checkout", methods=["POST"])
 def api_checkout():
     """Crea la orden y devuelve la URL de pago de la pasarela elegida."""
+    if not app.config["PAYMENTS_ENABLED"]:
+        return jsonify({
+            "ok": False,
+            "code": "payments_not_enabled",
+            "error": "La compra en línea estará disponible próximamente. Tu selección permanece en el carrito.",
+        }), 503
     data = request.get_json(force=True, silent=True) or {}
     cart = data.get("cart") or []
     customer = data.get("customer") or {}

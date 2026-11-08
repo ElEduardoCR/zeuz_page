@@ -5,8 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% block title %}ZEUZ DNC — Tu taller conectado{% endblock %}</title>
   <meta name="description" content="{% block description %}ZEUZ DNC transfiere programas a máquinas CNC por RS232 y se controla de forma inalámbrica desde iPhone y iPad con iZEUZ.{% endblock %}" />
-  <meta name="theme-color" content="#F5F7FA" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#0B111A" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#ffffff" />
 
   <link rel="stylesheet" href="{{ url_for('static', filename='css/shop.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/design.css') }}" />
@@ -20,16 +19,14 @@
       <a href="{{ url_for('index') }}" class="brand">
         <div class="brand__text">
           <picture class="brand__lockup">
-            <source media="(prefers-color-scheme: dark)" srcset="{{ url_for('static', filename='brand/dnc-dark.svg') }}" />
             <img src="{{ url_for('static', filename='brand/dnc-light.svg') }}" alt="ZEUZ DNC" width="172" height="44" />
           </picture>
-          <span class="brand__tag">Tecnología para CNC</span>
         </div>
       </a>
       <nav class="nav" aria-label="Navegación principal">
         <a href="{{ url_for('index') }}#soluciones">El sistema</a>
-        <a href="{{ url_for('catalog_page') }}" {% if request.endpoint == 'catalog_page' %}aria-current="page"{% endif %}>Catálogo</a>
         <a href="{{ url_for('downloads_page') }}" {% if request.endpoint == 'downloads_page' %}aria-current="page"{% endif %}>Descargas</a>
+        <a href="{{ url_for('catalog_page') }}" {% if request.endpoint == 'catalog_page' %}aria-current="page"{% endif %}>Tienda</a>
         <a href="{{ url_for('index') }}#contacto">Soporte</a>
       </nav>
       <div class="topbar__actions">
@@ -39,7 +36,6 @@
                class="region-switch__opt{% if code == store.region %} is-active{% endif %}"
                {% if code == store.region %}aria-current="true"{% endif %}
                title="Precios en {{ region.currency }} · envío a {{ region.label }}">
-              <span aria-hidden="true">{{ region.flag }}</span>
               <span class="region-switch__code">{{ region.currency }}</span>
             </a>
           {% endfor %}
@@ -58,7 +54,7 @@
         <nav class="mobile-menu__panel" aria-label="Navegación móvil">
           <a href="{{ url_for('index') }}">Inicio</a>
           <a href="{{ url_for('index') }}#soluciones">El sistema</a>
-          <a href="{{ url_for('catalog_page') }}">Catálogo</a>
+          <a href="{{ url_for('catalog_page') }}">Tienda</a>
           <a href="{{ url_for('downloads_page') }}">Descargas</a>
           <a href="{{ url_for('index') }}#como-funciona">Cómo funciona</a>
           <a href="{{ url_for('index') }}#contacto">Soporte y contacto</a>
@@ -72,6 +68,7 @@
       </details>
     </div>
   </header>
+  <div class="scroll-progress" aria-hidden="true"><span></span></div>
 
   <main id="main-content" tabindex="-1">
     {% block content %}{% endblock %}
@@ -82,7 +79,6 @@
       <div class="footer__col">
         <div class="footer__brand">
           <picture class="brand__lockup">
-            <source media="(prefers-color-scheme: dark)" srcset="{{ url_for('static', filename='brand/dnc-dark.svg') }}" />
             <img src="{{ url_for('static', filename='brand/dnc-light.svg') }}" alt="ZEUZ DNC" width="172" height="44" />
           </picture>
         </div>
@@ -91,7 +87,7 @@
       <div class="footer__col">
         <div class="footer__title">Navegación</div>
         <a href="{{ url_for('index') }}">Inicio</a>
-        <a href="{{ url_for('catalog_page') }}">Catálogo</a>
+        <a href="{{ url_for('catalog_page') }}">Tienda</a>
         <a href="{{ url_for('downloads_page') }}">Descargas</a>
         <a href="{{ url_for('cart_page') }}">Carrito</a>
       </div>
@@ -107,6 +103,7 @@
       <span>Hecho en México 🇲🇽</span>
     </div>
   </footer>
+  <div class="shop-toast" id="shop-toast" role="status" aria-live="polite" hidden></div>
 
   <script>
     // Config de la region activa para que el JS pinte precios en la moneda
@@ -115,6 +112,7 @@
   </script>
   {% block scripts %}{% endblock %}
   <script src="{{ url_for('static', filename='js/navigation.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/motion.js') }}"></script>
   <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
   <script src="{{ url_for('static', filename='js/shop.js') }}"></script>
 </body>

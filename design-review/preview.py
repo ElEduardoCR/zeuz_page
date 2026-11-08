@@ -15,6 +15,7 @@ for key in list(os.environ):
     if key.startswith(('STRIPE_', 'MP_', 'MERCADOPAGO_', 'RESEND_', 'ADMIN_')):
         os.environ.pop(key)
 os.environ['DATABASE_URL'] = 'sqlite:////tmp/zeuz-design-preview.db'
+os.environ['PAYMENTS_ENABLED'] = 'false'
 os.environ['PUBLIC_BASE_URL'] = 'http://127.0.0.1:5088'
 os.environ['FLASK_SECRET'] = 'local-design-preview-only'
 from app import app
@@ -31,10 +32,9 @@ def preview_appearance(response):
         css = (ROOT / 'static/css/design.css').read_text()
         tokens = css.split(':root {', 1)[1].split('}', 1)[0]
         styles += ':root {' + tokens + 'color-scheme:light;}'
+    # The marketing design intentionally starts white regardless of OS theme.
     elif scheme == 'dark':
-        css = (ROOT / 'static/css/design.css').read_text()
-        tokens = css.split('@media (prefers-color-scheme: dark)', 1)[1].split(':root {', 1)[1].split('}', 1)[0]
-        styles += ':root {' + tokens + 'color-scheme:dark;}'
+        styles += ':root {color-scheme:light;}'
     if request.args.get('preview_text') == '200':
         styles += 'html {font-size:200%;}'
     if styles:

@@ -1,0 +1,28 @@
+[
+  {
+    "id": "agent-windows",
+    "name": "Zeuz Agent",
+    "platform": "Windows",
+    "requirements": "Windows 10 u 11 · 64 bits",
+    "filename": "ZeuzAgent.exe",
+    "version": "0.4.1",
+    "size_bytes": 171341362,
+    "size_label": "171.3 MB",
+    "sha256": "056d2206f7cb489aeeae78041fead2b58fc0fd371ee6fd7cbe5f2a6d9177b4bd",
+    "release_url": "https://github.com/ElEduardoCR/zeuzagent/releases/tag/v0.4.1",
+    "download_url": "https://github.com/ElEduardoCR/zeuzagent/releases/download/v0.4.1/ZeuzAgent.exe"
+  },
+  {
+    "id": "agent-macos",
+    "name": "Zeuz Agent",
+    "platform": "macOS",
+    "requirements": "Mac con Apple Silicon · M1 o posterior",
+    "filename": "ZeuzAgent-macOS.zip",
+    "version": "0.4.1",
+    "size_bytes": 154104875,
+    "size_label": "154.1 MB",
+    "sha256": "c72db325da2f8894d4874f04c10bddf7af3d1aa5ee03f7d0182a25a1a8c2dcac",
+    "release_url": "https://github.com/ElEduardoCR/zeuzagent/releases/tag/v0.4.1",
+    "download_url": "https://github.com/ElEduardoCR/zeuzagent/releases/download/v0.4.1/ZeuzAgent-macOS.zip"
+  }
+]

@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% block title %}Pago · ZEUZ DNC{% endblock %}
+{% block title %}{{ "Pago" if payments_enabled else "Tu selección" }} · ZEUZ DNC{% endblock %}
 
 {% block content %}
 <section class="page-head">
   <div class="container">
-    <h1>Finalizar compra</h1>
+    <h1>{{ "Finalizar compra" if payments_enabled else "Tu próxima conexión." }}</h1>
     <p>Envío a <strong>{{ store.region_label }}</strong>, precios en {{ store.currency }}.
       {% if regions|length > 1 %}
         ¿Envías a otro país?
@@ -18,6 +18,9 @@
 
 <section class="container checkout-page">
   <div class="cart-layout">
+    {% if not payments_enabled %}
+    <div class="checkout-coming"><p class="eyebrow">La tienda ZEUZ, próximamente</p><h2>Tu selección está lista.</h2><p>Estamos preparando las compras en línea. Por ahora puedes explorar el catálogo y guardar tu selección en este navegador.</p><p>Los importes son de referencia. No se ha realizado ningún pedido ni cargo.</p><a class="btn btn--primary" href="{{ url_for('cart_page') }}">Volver a mi carrito</a><br><a class="text-link" href="mailto:{{ support_email }}">Consultar disponibilidad <span aria-hidden="true">↗</span></a></div>
+    {% else %}
     <form id="checkout-form" class="checkout-form" novalidate>
       <fieldset>
         <legend>Contacto</legend>
@@ -134,9 +137,10 @@
       </button>
       <p class="legal">Al pagar aceptas nuestros términos y condiciones. Te enviaremos el comprobante por email.</p>
     </form>
+    {% endif %}
 
     <aside class="cart-summary">
-      <h2>Tu pedido</h2>
+      <h2>{{ "Tu pedido" if payments_enabled else "Tu selección" }}</h2>
       <div id="checkout-items" class="checkout-items"></div>
       <div class="summary__row">
         <span>Subtotal</span>
@@ -168,6 +172,7 @@
 <script>
   (function () {
     const form = document.getElementById('checkout-form');
+    if (!form) return;
     const errBox = document.getElementById('form-error');
     const btn = document.getElementById('submit-btn');
 

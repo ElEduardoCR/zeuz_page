@@ -1,8 +1,8 @@
 {# Tarjeta reutilizable de producto. Espera 'p' en el contexto. #}
 <article class="card" data-product-id="{{ p.id }}" data-category="{{ p.category }}">
-  {% if p.badge %}<span class="card__badge">{{ p.badge }}</span>{% endif %}
+  {% if p.external %}<span class="card__badge">iPhone y iPad</span>{% elif p.id == "zeuzdnc-touch" %}<span class="card__badge">Pantalla táctil 7″</span>{% endif %}
   <a href="{{ url_for('product_page', product_id=p.id) }}" class="card__media">
-    <img src="{{ url_for('static', filename=p.image) }}" alt="{{ p.name }}" loading="lazy" />
+    <img src="{{ url_for('static', filename='brand/app.png' if p.id == 'izeuz-ios' else p.image) }}" alt="{{ p.name }}" loading="lazy" />
   </a>
   <div class="card__body">
     {% if p.id == 'zeuzdnc-headless' %}<span class="card__image-note">Imagen de referencia: versión con pantalla</span>{% endif %}
@@ -10,6 +10,7 @@
       <a href="{{ url_for('product_page', product_id=p.id) }}">{{ p.name }}</a>
     </h3>
     <p class="card__short">{{ p.short }}</p>
+    <a class="card__detail-link" href="{{ url_for('product_page', product_id=p.id) }}">Conocer más <span aria-hidden="true">&nbsp;↗</span></a>
     <div class="card__footer{% if p.external %} card__footer--external{% endif %}">
       {% if p.external %}
         <div class="card__price-block">

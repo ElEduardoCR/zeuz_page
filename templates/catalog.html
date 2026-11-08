@@ -1,42 +1,21 @@
 {% extends "base.html" %}
-{% block title %}Catálogo · ZEUZ DNC{% endblock %}
-
+{% block title %}Tienda · ZEUZ DNC{% endblock %}
+{% block description %}Encuentra tu ZEUZ DNC: pantalla táctil de 7 pulgadas o control desde tu red. Explora el catálogo y prepara tu carrito.{% endblock %}
 {% block content %}
-<section class="page-head page-head--catalog">
-  <div class="container">
-    <span class="section-kicker">Tu instalación, pieza por pieza</span>
-    <h1>Equipo para conectar <span class="accent">tu taller</span></h1>
-    <p>El dispositivo ZEUZ DNC, en sus dos versiones, y la aplicación iZEUZ para iPhone y iPad.</p>
-  </div>
-</section>
-
+<section class="page-head page-head--catalog"><div class="container"><p class="eyebrow">La tienda ZEUZ</p><h1>Tu taller.<br><span class="accent">Tu forma de conectar.</span></h1><p>Elige tu equipo y descubre lo que pueden hacer juntos.</p></div></section>
 <section class="container catalog-page">
-  <div class="catalog-tools" aria-label="Filtrar productos">
-    <button type="button" class="catalog-filter is-active" aria-pressed="true" data-filter="all">Todo</button>
-    <button type="button" class="catalog-filter" aria-pressed="false" data-filter="dispositivo">Dispositivo</button>
-    <button type="button" class="catalog-filter" aria-pressed="false" data-filter="software">iZEUZ</button>
-  </div>
-  <div class="products-grid" id="catalog-grid">
-    {% for p in products %}
-      {% include "_product_card.html" %}
-    {% endfor %}
-  </div>
+  {% if not payments_enabled %}<div class="store-notice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 8h14l1 12H4L5 8Z"/><path d="M8 8V6a4 4 0 0 1 8 0v2"/></svg><span><strong>Estamos preparando nuestra tienda.</strong> Puedes explorar y añadir equipos al carrito. Las compras en línea estarán disponibles próximamente. Precios de referencia.</span></div>{% endif %}
+  <div class="catalog-tools" aria-label="Filtrar productos"><button type="button" class="catalog-filter is-active" aria-pressed="true" data-filter="all">Todo</button><button type="button" class="catalog-filter" aria-pressed="false" data-filter="dispositivo">Equipos</button><button type="button" class="catalog-filter" aria-pressed="false" data-filter="software">Aplicaciones</button></div>
+  <div class="products-grid" id="catalog-grid">{% for p in products %}{% include "_product_card.html" %}{% endfor %}</div>
+  <p class="equipment-note">Precios en {{ store.currency }}{% if store.tax_rate > 0 %}, con {{ store.tax_label }} incluido{% endif %}. Envío calculado por separado en el resumen.</p>
+  <div class="store-benefits"><article><h2>Una versión para ti.</h2><p>Control táctil junto a la máquina o acceso desde la red. La conexión RS232 se mantiene en ambas versiones.</p></article><article><h2>Un ecosistema completo.</h2><p>Combina tu dispositivo con iZEUZ y Zeuz Agent para trabajar desde tu teléfono y tu computadora.</p><a class="text-link" href="{{ url_for('downloads_page') }}">Conoce las descargas <span aria-hidden="true">↗</span></a></article><article><h2>Hablemos de tu CNC.</h2><p>Te ayudamos a revisar la conexión y a elegir el equipo que corresponde a tu taller.</p><a class="text-link" href="mailto:{{ support_email }}">Contactar <span aria-hidden="true">↗</span></a></article></div>
 </section>
 {% endblock %}
-
-{% block scripts %}
-<script>
-  document.querySelector('.catalog-tools').addEventListener('click', (event) => {
-    const button = event.target.closest('[data-filter]');
-    if (!button) return;
-    const filter = button.dataset.filter;
-    document.querySelectorAll('.catalog-filter').forEach((item) => {
-      item.classList.toggle('is-active', item === button);
-      item.setAttribute('aria-pressed', String(item === button));
-    });
-    document.querySelectorAll('#catalog-grid .card').forEach((card) => {
-      card.hidden = filter !== 'all' && card.dataset.category !== filter;
-    });
-  });
-</script>
-{% endblock %}
+{% block scripts %}<script>
+document.querySelector('.catalog-tools').addEventListener('click', event => {
+  const button = event.target.closest('[data-filter]');
+  if (!button) return;
+  document.querySelectorAll('.catalog-filter').forEach(item => { item.classList.toggle('is-active', item === button); item.setAttribute('aria-pressed', String(item === button)); });
+  document.querySelectorAll('#catalog-grid .card').forEach(card => { card.hidden = button.dataset.filter !== 'all' && card.dataset.category !== button.dataset.filter; });
+});
+</script>{% endblock %}

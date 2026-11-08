@@ -4,13 +4,12 @@
 
 {% block content %}
 <section class="container product-detail">
-  <a href="{{ url_for('catalog_page') }}" class="back-link">← Volver al catálogo</a>
+  <a href="{{ url_for('catalog_page') }}" class="back-link">← Volver a la tienda</a>
   <div class="product-detail__grid">
     <div class="product-gallery{% if product.images|length > 1 %} product-gallery--multi{% endif %}">
       <div class="product-detail__media">
-        {% if product.badge %}<span class="card__badge">{{ product.badge }}</span>{% endif %}
         <img id="gallery-main"
-             src="{{ url_for('static', filename=product.image) }}"
+             src="{{ url_for('static', filename='brand/app.png' if product.id == 'izeuz-ios' else product.image) }}"
              alt="{{ product.name }}" />
       </div>
       {# Las miniaturas solo aparecen cuando hay mas de una foto: con una sola
@@ -27,9 +26,11 @@
         {% endfor %}
       </div>
       {% endif %}
+      {% if product.id == "zeuzdnc-headless" %}<p class="equipment-note">Imagen de referencia: versión con pantalla. Este modelo no incluye módulo táctil.</p>{% endif %}
     </div>
 
     <div class="product-detail__info">
+      {% if not payments_enabled and not product.external %}<p class="eyebrow">Compras en línea próximamente · Precio de referencia</p>{% endif %}
       <span class="product-detail__category">{{ product.category }}</span>
       <h1>{{ product.name }}</h1>
       <p class="product-detail__short">{{ product.short }}</p>
@@ -51,7 +52,9 @@
         {% endif %}
       </div>
       <div class="product-detail__stock">
-        {% if product.stock > 5 %}
+        {% if not payments_enabled %}
+          Disponible para explorar · Consulta disponibilidad
+        {% elif product.stock > 5 %}
           <span class="dot dot--ok"></span> En stock
         {% elif product.stock > 0 %}
           <span class="dot dot--warn"></span> Pocas unidades ({{ product.stock }})
@@ -76,10 +79,10 @@
       <div class="product-detail__actions">
         <div class="qty">
           <button type="button" class="qty__btn" data-step="-1" aria-label="Restar">−</button>
-          <input type="number" id="qty" value="1" min="1" max="99" />
+          <input type="number" id="qty" value="1" min="1" max="99" aria-label="Cantidad" />
           <button type="button" class="qty__btn" data-step="1" aria-label="Sumar">+</button>
         </div>
-        <button type="button" class="btn btn--primary btn--lg js-add-to-cart" data-id="{{ product.id }}" data-qty-input="qty">
+        <button type="button" class="btn btn--primary btn--lg js-add-to-cart" data-id="{{ product.id }}" data-qty-input="qty" {% if product.stock <= 0 %}disabled{% endif %}>
           Añadir al carrito
         </button>
       </div>
@@ -91,9 +94,8 @@
         <li>📡 Conexión inalámbrica con ZEUZ DNC</li>
         <li>↗ Descarga y actualizaciones desde el App Store</li>
         {% else %}
-        <li>🚚 Envío a {{ store.region_label }}: {{ store.shipping_flat|money(store.currency) }}</li>
-        <li>🛡️ 30 días de garantía en el dispositivo</li>
-        <li>📦 Soporte de puesta en marcha</li>
+        <li>Envío de referencia a {{ store.region_label }}: {{ store.shipping_flat|money(store.currency) }}</li>
+        <li>Soporte de puesta en marcha</li>
         {% if store.customs_notice %}
         <li>🛃 Los aranceles de importación los cobra la paquetería al entregar</li>
         {% endif %}

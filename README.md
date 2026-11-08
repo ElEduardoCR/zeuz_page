@@ -1,8 +1,43 @@
 # ZEUZ DNC — Tienda
 
-Tienda pública del sistema **ZEUZ DNC**. Vende el dispositivo en sus dos
-variantes a México y Estados Unidos, con pagos por **Stripe** y **Mercado
-Pago**. Proyecto aparte del panel de operación (`ZeuzDNC/`) — separados a
+## Rediseño y preparación de pagos
+
+La tienda tiene una ruta principal `/tienda`; `/catalogo` se conserva como
+alias. El catálogo, las fichas, el carrito y las cotizaciones funcionan con
+los cobros desactivados. `PAYMENTS_ENABLED` es `false` por defecto: incluso
+si existen credenciales de Stripe o Mercado Pago, `/api/checkout` devuelve
+`503` con el código `payments_not_enabled` antes de crear un pedido o llamar
+a una pasarela. La interfaz recibe `payments_enabled` y
+`store.payments_enabled` para presentar el estado de apertura próxima.
+
+La futura activación requiere `PAYMENTS_ENABLED=true` además de las
+credenciales, webhooks y base de datos persistente descritos abajo. No se
+ha activado el cobro con este rediseño. Los webhooks de pedidos anteriores
+conservan su funcionamiento.
+
+Las descargas públicas de Zeuz Agent están en `/descargas`. El manifiesto
+`data/downloads.json` contiene la versión publicada, plataforma, tamaño y
+SHA-256 de cada archivo. Las rutas `/descargas/agent-windows` y
+`/descargas/agent-macos` redirigen a los binarios oficiales en GitHub
+Releases; al agregar `/sha256` se descarga su archivo de verificación.
+El manifiesto fija la versión para que los checksums correspondan al
+archivo descargado. Al publicar otra versión, actualizar juntos URL,
+versión, tamaño y checksum a partir de los assets de GitHub.
+
+Verificado el 8 de noviembre de 2026: ambos assets de **v0.4.1** responden
+HTTP 200 y `Content-Disposition: attachment`. Los tamaños y SHA-256 se
+tomaron de la API pública de GitHub Releases. No se incluyen binarios en
+el repositorio de la tienda.
+
+Pruebas locales, sin usar credenciales ni crear pedidos reales:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+Tienda pública del sistema **ZEUZ DNC**. Presenta el dispositivo en sus dos
+variantes para México y Estados Unidos, con una base para integrar pagos
+por **Stripe** y **Mercado Pago** más adelante. Proyecto aparte del panel de operación (`ZeuzDNC/`) — separados a
 propósito porque la tienda va expuesta a internet y el panel corre aislado en
 el taller.
 

@@ -1,35 +1,42 @@
-# ZEUZ DNC · dirección de diseño
+# ZEUZ DNC · dirección de diseño · 8 noviembre 2026
 
-La web ayuda al responsable de un taller a entender cómo llegan sus programas al control CNC y elegir el equipo. El motivo propio del producto es la conexión entre carpeta, dispositivo y puerto RS232, representada como una ruta técnica sencilla. Se mantienen imágenes, enlaces, datos comerciales y funcionalidades del catálogo existente.
+La página presenta ZEUZ DNC a responsables y operadores de talleres CNC: explica cómo llega un programa desde la computadora hasta el control RS232, ofrece las descargas y permite explorar el equipo. El rediseño adopta una presentación de producto inspirada en Apple y conserva la identidad ZEUZ.
 
-## Auditoría inicial
+## Composición y color
 
-El sitio publicado y el checkout local comparten Flask/Jinja y CSS. La portada tiene una imagen de taller útil y una identidad azul reconocible, pero mucha tipografía en mayúsculas, bordes y resplandores compiten. La navegación desaparece en móvil sin sustituto. El botón ENVIAR de la miniatura parece accionable aunque es decorativo. Se conserva el contenido útil y se corrigen estos puntos.
+El blanco predomina por petición del usuario, también cuando el sistema operativo usa apariencia oscura. El azul identifica acciones y acentos; el azul marino concentra la explicación del flujo de trabajo. No hay selector de apariencia.
 
-## Sistema antes de implementar
+| Rol | Color |
+| --- | --- |
+| Lienzo | #FFFFFF |
+| Superficie secundaria | #F5F7FA |
+| Texto principal | #142235 |
+| Texto secundario | #526174 |
+| Acción | #086BC1 |
+| Azul de marca y titulares grandes | #1E88E5 |
+| Sección de conexión | #0B1B30 |
 
-| Rol | Claro | Oscuro |
-| --- | --- | --- |
-| Lienzo | #F5F7FA | #0B111A |
-| Superficie | #FFFFFF | #131E2B |
-| Texto | #142235 | #F1F5FA |
-| Secundario | #526174 | #ADBDCF |
-| Acción | #086BC1 | #74CAFF |
-| Identidad decorativa | #29B6F6 | #29B6F6 |
+Tipografía de sistema, titulares adaptables de aproximadamente 45–98 px, cuerpo de 17 px y monoespaciada solo en la vista ilustrativa de código. Los contrastes calculados están en `VALIDATION.md`.
 
-Cian del logo conservado; azul más oscuro para texto y botones sobre blanco. Tipografía de sistema, titulares 40–76 px, subtítulos 28–48 px, cuerpo 17–20 px, controles 14–16 px. Monoespaciada solo para etiquetas de conexión. Contrastes calculados en VALIDATION.md tras implementar.
+Regular: [marca | sistema | descargas | tienda | región | carrito] / [titular centrado + acciones] / [producto amplio] / [archivo → revisión → CNC, visual fijo al desplazarse] / [iZEUZ y Agent] / [tienda] / [descargas y preguntas].
 
-Regular: [marca | navegación | región | carrito] / [titular + acciones | dispositivo] / [ruta de conexión] / [soluciones] / [selección de equipo] / [pasos] / [FAQ].
-Compacto: [marca | carrito | menú] / [región y navegación desplegables] / [titular] / [acciones] / [dispositivo] / [ruta vertical] / [secciones en una columna].
+Compacto: [marca | carrito | menú] / [titular y producto] / [flujo en lectura vertical] / [aplicaciones] / [productos en una columna] / [descargas y preguntas]. El pie pasa a una columna por debajo de 380 px.
 
-El vidrio vive en la barra flotante y el enlace sobre la foto del producto. Las tarjetas usan superficies sólidas. La composición se distingue por el dispositivo y la ruta de conexión real; no se añaden métricas, testimonios ni funciones de sincronización en desarrollo. No hay animación automática; solo respuesta corta al presionar controles.
+La firma visual es el recorrido del programa CNC: al desplazarse, la vista ilustrativa acompaña selección, revisión y envío. La imagen principal cambia de escala suavemente y las secciones aparecen al entrar en pantalla, sin interceptar el scroll. El contenido permanece disponible sin JavaScript y con movimiento reducido. La translucidez se limita a la navegación; las superficies de contenido son sólidas.
+
+## Funciones y contenido
+
+- Descargas oficiales de Zeuz Agent para Windows y Mac con Apple Silicon, con versión, tamaño y archivo SHA-256. La indicación para Mac nombra la arquitectura y no presupone que todo Mac es compatible.
+- Tienda en `/tienda`, con `/catalogo` conservado; fichas, filtros, carrito y resumen calculado por el servidor. Los cobros quedan desactivados mediante `PAYMENTS_ENABLED=false`; Stripe se integrará más adelante.
+- Precios identificados como referencia mientras se prepara la tienda. Sin nuevas métricas, testimonios ni promesas de entrega. La imagen del equipo sin pantalla se identifica como referencia de la versión táctil.
+- Navegación móvil con `details`, enlaces descriptivos, foco visible y controles principales de al menos 44 px. Ajuste de palabras y mínimos de grid para mantener el contenido dentro de pantallas estrechas.
 
 ## Referencias aplicadas a web
 
-- `accessibility.md › Vision`: “Support larger text sizes.” Zoom al 200 %, foco visible, lectura sin depender del color.
-- `buttons.md › Best practices`: “Always include a press state for a custom button.” Controles táctiles de al menos 44 px.
-- `liquid-glass.md › The two layers`: el vidrio queda en navegación y controles flotantes; superficies opacas al reducir transparencia o aumentar contraste.
-- `branding.md › Best practices`: “Ensure branding always defers to content.” Se retiran resplandores y accesorios repetidos.
-- `layout.md`, `typography.md`, `color.md`, `materials.md` y `designing-for-ios.md`: jerarquía, tamaños adaptables y materiales. Las convenciones nativas se traducen a navegación web, sin imitar pestañas de una app.
+- `accessibility.md › Vision`: “Support larger text sizes.” El diseño permite reflujo del texto y conserva la jerarquía.
+- `motion.md › Best practices`: “Make motion optional.” `prefers-reduced-motion` elimina transiciones, transformaciones y scroll suave.
+- `materials.md › Liquid Glass`: “Don’t use Liquid Glass in the content layer.” El material se reserva a la navegación y se vuelve opaco con transparencia reducida.
+- `buttons.md › Best practices`: “Always include a press state for a custom button.” Las acciones tienen respuesta visual y foco de teclado.
+- `branding.md › Best practices`: “Ensure branding always defers to content.” Se conserva el logo vectorial actual y se evita repetir adornos de marca.
 
-Se reduce un accesorio: la tira de marcas de controles se sustituye por una explicación de RS232 y una referencia a confirmar los parámetros de cada máquina. La compatibilidad no se da por garantizada solo por la marca.
+También se consultaron `layout.md`, `typography.md`, `color.md` y `designing-for-ios.md`. Se aplican sus principios de jerarquía y accesibilidad a la web, sin reproducir convenciones exclusivas de una aplicación nativa.
