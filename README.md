@@ -1,249 +1,135 @@
-# ZEUZ DNC — Tienda
+# ZEUZ DNC — Tienda oficial
 
-## Rediseño y preparación de pagos
+Sitio público de ZEUZ DNC, con envíos **solo a México**, precios en **pesos mexicanos (MXN)** y **Stripe Checkout** como único proveedor de pago de esta tienda. iZEUZ conserva su compra independiente en el App Store. Mercado Libre queda fuera de este sitio y de esta integración.
 
-La tienda tiene una ruta principal `/tienda`; `/catalogo` se conserva como
-alias. El catálogo, las fichas, el carrito y las cotizaciones funcionan con
-los cobros desactivados. `PAYMENTS_ENABLED` es `false` por defecto: incluso
-si existen credenciales de Stripe o Mercado Pago, `/api/checkout` devuelve
-`503` con el código `payments_not_enabled` antes de crear un pedido o llamar
-a una pasarela. La interfaz recibe `payments_enabled` y
-`store.payments_enabled` para presentar el estado de apertura próxima.
+La tienda es un proyecto separado de `ZeuzDNC/`, el panel que opera en la red del taller. Está construida con Flask/Jinja, CSS, JavaScript, SQLAlchemy y Stripe Checkout.
 
-La futura activación requiere `PAYMENTS_ENABLED=true` además de las
-credenciales, webhooks y base de datos persistente descritos abajo. No se
-ha activado el cobro con este rediseño. Los webhooks de pedidos anteriores
-conservan su funcionamiento.
+## Estado de los pagos
 
-Las descargas públicas de Zeuz Agent están en `/descargas`. El manifiesto
-`data/downloads.json` contiene la versión publicada, plataforma, tamaño y
-SHA-256 de cada archivo. Las rutas `/descargas/agent-windows` y
-`/descargas/agent-macos` redirigen a los binarios oficiales en GitHub
-Releases; al agregar `/sha256` se descarga su archivo de verificación.
-El manifiesto fija la versión para que los checksums correspondan al
-archivo descargado. Al publicar otra versión, actualizar juntos URL,
-versión, tamaño y checksum a partir de los assets de GitHub.
+`PAYMENTS_ENABLED=false` es el valor predeterminado. El catálogo, el carrito y las cotizaciones funcionan con los cobros apagados; el checkout no crea pedidos ni sesiones de pago en ese estado. La presencia de llaves antiguas no activa el cobro.
 
-Verificado el 8 de noviembre de 2026: ambos assets de **v0.4.1** responden
-HTTP 200 y `Content-Disposition: attachment`. Los tamaños y SHA-256 se
-tomaron de la API pública de GitHub Releases. No se incluyen binarios en
-el repositorio de la tienda.
+Antes de activar pagos, verificar la base de datos persistente, el secreto de sesión, las credenciales, el webhook y el catálogo. Validar primero el flujo completo con credenciales de prueba de Stripe. El checkout muestra una indicación visible cuando usa modo de prueba. La activación productiva es un paso separado de cambiar el código o publicar el diseño.
 
-Pruebas locales, sin usar credenciales ni crear pedidos reales:
+No se inventan términos comerciales, políticas de devolución ni plazos de entrega. Los precios y el envío actuales se conservan como datos editables.
 
-```bash
-python -m unittest discover -s tests -v
+## Catálogo y cambios de precio
+
+`data/products.json` contiene los productos y la configuración de México. Se relee en cada petición. Modificar `prices.MXN` cambia el precio neto del producto. Escribir importes en MXN con hasta dos decimales; el servidor normaliza cada unidad a centavos con redondeo HALF_UP antes de aplicar la tasa de IVA configurada.
+
+| Producto | Precio neto actual |
+| --- | ---: |
+| ZEUZ DNC con pantalla táctil 7″ | $8,900 MXN |
+| ZEUZ DNC sin pantalla | $7,499 MXN |
+
+Se conserva IVA de 16 % y envío fijo de $250 MXN en `regions.MX.shipping_flat`. El precio de referencia de iZEUZ ($299 MXN) ya es final: no se añade IVA de nuevo y no se vende mediante Stripe. Estos valores son configuración existente, no una nueva política fiscal o comercial.
+
+Ejemplo de cambio de precio:
+
+```json
+"prices": { "MXN": 8900 }
 ```
 
-Tienda pública del sistema **ZEUZ DNC**. Presenta el dispositivo en sus dos
-variantes para México y Estados Unidos, con una base para integrar pagos
-por **Stripe** y **Mercado Pago** más adelante. Proyecto aparte del panel de operación (`ZeuzDNC/`) — separados a
-propósito porque la tienda va expuesta a internet y el panel corre aislado en
-el taller.
+Para cambiar el envío, editar `regions.MX.shipping_flat`. Para ocultar un producto sin eliminarlo, usar `active: false`. Sus fotos están en `images`; `external: true` mantiene la compra en una tienda externa. Las existencias se consultan en el servidor. Los accesorios permanecen inactivos hasta que se habiliten expresamente.
 
-## Stack
+Después de cambiar un importe:
 
-- **Flask 3** — backend
-- **Stripe Checkout** — pagos en Estados Unidos y (opcional) México
-- **Mercado Pago Checkout Pro** — pagos en México
-- **SQLAlchemy Core** — persistencia (SQLite local, Postgres/Supabase en prod)
-- **Resend** — avisos de pedido por correo
-- **Vanilla JS + localStorage** — carrito
-- **CSS puro** — sin frameworks
+1. Ejecutar las pruebas y revisar la ficha, el carrito y el resumen.
+2. Comprobar la cotización y Stripe Checkout en modo de prueba, incluidos IVA y envío.
+3. Publicar el catálogo actualizado mediante el despliegue normal de Vercel.
 
-## Estructura
+Los pedidos conservan una copia de sus importes: editar el catálogo no cambia el histórico. Si cambia un precio o el envío entre la revisión del carrito y el inicio del pago, el servidor rechaza la cotización anterior; la interfaz muestra el nuevo total y pide volver a continuar. Una sesión de Stripe ya creada conserva los importes de esa sesión.
 
-```
-ZeuzDNC-Shop/
-  app.py                  Rutas públicas, API, webhooks, cálculo de totales
-  admin.py                Panel de pedidos (/admin)
-  products.py             Catálogo, regiones y precios
-  db.py                   Motor y esquema de base de datos
-  orders.py               Alta y consulta de pedidos
-  payments_stripe.py      Stripe Checkout + verificación de webhook
-  payments.py             Mercado Pago Checkout Pro
-  notifications.py        Avisos por correo vía Resend
-  data/
-    products.json         Catálogo y config de regiones (editable)
-    shop.db               SQLite local (ignorado por git)
-  templates/
-    base.html             Layout de la tienda
-    index/catalog/product/cart/checkout/…
-    admin/                Layout, login, listado y detalle de pedidos
-  static/
-    css/shop.css          Estilos de la tienda
-    css/admin.css         Estilos del panel
-    js/cart.js            Carrito en localStorage
-    js/shop.js            UI del carrito y checkout
-```
+## Flujo de compra
 
-## Regiones
+1. El visitante añade equipos al carrito, guardado en el navegador.
+2. `POST /api/quote` recibe `{cart}` y devuelve las líneas, totales MXN y `quote_token`. El servidor resuelve precios, impuestos, envío y disponibilidad; no acepta precios del navegador.
+3. El checkout solicita nombre y correo electrónico; el teléfono es opcional. `POST /api/checkout` recibe `{cart, customer, quote_token, attempt_id}`. `attempt_id` es un UUIDv4 que el navegador reutiliza al reintentar la misma selección y contacto.
+4. El servidor valida la cotización y registra el intento. Stripe recibe la misma clave de idempotencia para evitar crear sesiones duplicadas por un reintento.
+5. Stripe recopila los datos de pago y la dirección completa de envío, restringida a México. Los importes se envían en MXN.
+6. El webhook firmado confirma el estado. La página de regreso muestra “Pago confirmado” únicamente cuando el servidor tiene un pago confirmado; visitar la URL de éxito no acredita un pago.
 
-Una región define moneda, impuesto, envío y pasarelas disponibles. Se
-configuran en `data/products.json` bajo `regions`:
+Los resultados públicos del pedido se restringen a la sesión del navegador que inició la compra y contienen solo información mínima, sin datos de contacto ni dirección. Los datos completos permanecen en administración. El navegador debe permitir las cookies de la tienda para conservar la sesión de compra.
 
-| | México | Estados Unidos |
-|---|---|---|
-| Moneda | MXN | USD |
-| Impuesto | IVA 16% | 0% (exportación tasa 0; sin nexo en EE. UU.) |
-| Envío | $250 tarifa plana | $60 tarifa plana |
-| Pasarelas | Mercado Pago, Stripe | Stripe |
-| Aduana | — | Aviso de aranceles DAP en el checkout |
+Errores previstos: `quote_changed` pide revisar un total actualizado; `stock_unavailable` pide corregir la selección; `attempt_conflict` o `attempt_expired` requieren otro intento. En errores de conexión, el navegador reutiliza el mismo intento. El botón se bloquea durante la solicitud y una modificación del carrito en otra pestaña detiene el salto a Stripe para volver a revisar.
 
-El visitante cambia de región con el selector de la barra superior; la
-elección se guarda en la cookie `zeuz_region` por un año.
+## Configuración y ejecución
 
-**Los precios en `products.json` son siempre netos (sin impuesto).** El
-impuesto lo aporta la región. Los productos con `external: true` (iZEUZ, que
-cobra Apple) son la excepción: su precio ya viene final.
-
-> Las tarifas de envío ($250 MXN / $60 USD) son **provisionales**. Cámbialas
-> en `regions.<código>.shipping_flat`. Para dar envío gratis a partir de un
-> monto, pon `free_shipping_over`.
-
-## Puesta en marcha
-
-### 1. Dependencias
-
-```bash
+```sh
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-```
-
-### 2. Configuración
-
-```bash
 cp .env.example .env
-```
-
-Llena `.env` siguiendo los comentarios del propio archivo. Lo mínimo para
-arrancar en local es `ADMIN_PASSWORD`; sin llaves de pasarela la tienda
-navega pero no cobra.
-
-**Nunca** commitees `.env` ni pegues una llave secreta (`sk_…`, contraseña de
-base de datos) en un chat, ticket o captura. Si pasa, rótala.
-
-### 3. Arrancar
-
-```bash
 python app.py
 ```
 
-Abre http://localhost:5001 (el 5000 lo suele tomar AirPlay en macOS).
-El panel de pedidos está en http://localhost:5001/admin
+Vista local: http://localhost:5001. Administración: http://localhost:5001/admin.
 
-Con auto-reload:
+| Variable | Función |
+| --- | --- |
+| `PAYMENTS_ENABLED` | Mantener `false` hasta completar la validación; `true` permite iniciar pagos si el resto de la configuración es válido. |
+| `STRIPE_SECRET_KEY` | Credencial del entorno de prueba o producción. |
+| `STRIPE_WEBHOOK_SECRET` | Verificación de eventos del webhook del mismo entorno. |
+| `DATABASE_URL` | Base persistente para pedidos e intentos. SQLite local sirve para desarrollo; el disco efímero de Vercel no sirve para pedidos. |
+| `FLASK_SECRET` | Secreto aleatorio y estable de al menos 32 caracteres para firmar las sesiones. |
+| `PUBLIC_BASE_URL` | Dominio usado en los retornos; producción: `https://www.zeuzdnc.com`. |
+| `ADMIN_PASSWORD` | Acceso al panel; sin contraseña el panel permanece cerrado. |
+| `SUPPORT_EMAIL` | Dirección de soporte mostrada en la web. |
+| `APP_STORE_URL` | Enlace oficial de iZEUZ; vacío mantiene “Próximamente”. |
+| `RESEND_API_KEY`, `NOTIFY_EMAIL`, `NOTIFY_FROM` | Configuración de avisos de pedidos. |
 
-```bash
-FLASK_DEBUG=1 python app.py
-```
+Las credenciales y `DATABASE_URL` se configuran en Vercel para el entorno correspondiente. No se incluyen en el repositorio, capturas ni registros. La migración entre bases requiere trasladar los datos existentes; cambiar la variable no los copia.
 
-## Base de datos
+El backend de persistencia usa SQLAlchemy y guarda dinero en centavos enteros. Las tablas incluyen pedidos e intentos de checkout. En PostgreSQL, el arranque solo comprueba la conexión; no crea tablas. Antes de habilitar pagos, aplicar la migración explícita necesaria y comprobar que las tablas están disponibles en la base persistente.
 
-El destino lo decide `DATABASE_URL`:
+## Webhook de Stripe
 
-| Entorno | Valor |
-|---|---|
-| Local | vacío → `sqlite:///data/shop.db` |
-| Supabase | `postgresql://postgres.<ref>:<password>@aws-0-<región>.pooler.supabase.com:6543/postgres` |
+Endpoint de producción:
 
-Las tablas se crean solas al arrancar. Migrar de SQLite a Postgres es cambiar
-esa variable: no hay una segunda ruta de código que mantener.
-
-> En Vercel usa siempre la cadena del **pooler** (puerto 6543), no la conexión
-> directa (`db.<ref>.supabase.co:5432`). Cada invocación serverless abre su
-> propia conexión y la conexión directa se queda sin cupo; además su host es
-> IPv6 y Vercel no siempre lo alcanza.
-
-Los importes se guardan en **centavos** (enteros). SQLite no tiene tipo
-decimal y los flotantes acumulan error al sumar; los enteros son exactos en
-ambas bases y son lo que piden las dos pasarelas.
-
-## Flujo de pago
-
-1. El cliente arma el carrito (`localStorage`) y va a `/checkout`.
-2. El resumen pide los totales a `POST /api/quote` — el navegador nunca los
-   calcula, para que lo mostrado sea exactamente lo que se cobra.
-3. `POST /api/checkout` resuelve el carrito **contra el catálogo del
-   servidor** (ignora cualquier precio que mande el cliente), da de alta la
-   orden como `pending` y crea la sesión de pago.
-4. Redirige a Stripe Checkout o a Mercado Pago según la pasarela elegida.
-5. La pasarela redirige de vuelta a `/pago/exito|fallo|pendiente`.
-6. El webhook (`/webhook/stripe` o `/webhook/mp`) confirma el cobro, marca la
-   orden como `paid` y dispara el aviso por correo.
-
-El webhook es la fuente de verdad, no el redirect: el cliente puede cerrar el
-navegador antes de volver.
-
-### Webhooks
-
-**Stripe** — https://dashboard.stripe.com/webhooks
-
-```
+```text
 https://www.zeuzdnc.com/webhook/stripe
 ```
 
-Eventos: `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
-`checkout.session.async_payment_failed`, `checkout.session.expired`.
-Copia el signing secret a `STRIPE_WEBHOOK_SECRET`. Sin él la firma no se puede
-verificar y el endpoint rechaza todo — que es lo correcto: es lo que impide
-que alguien mande un POST falso diciendo que una orden fue pagada.
+Eventos usados: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed` y `checkout.session.expired`. El secreto de firma debe corresponder a ese endpoint y al entorno utilizado. No se considera pagado un pedido solo por la redirección del navegador.
 
-**Mercado Pago** — Tus integraciones → Webhooks
+Para pruebas locales con Stripe CLI:
 
-```
-https://www.zeuzdnc.com/webhook/mp
+```sh
+stripe listen --forward-to localhost:5001/webhook/stripe
 ```
 
-Para probar en local usa `stripe listen --forward-to localhost:5001/webhook/stripe`
-o un túnel tipo ngrok.
+El código histórico de Mercado Pago, si se conserva para pedidos antiguos, no lo habilita como opción para nuevas compras en la tienda oficial.
 
-## Panel de pedidos
+## Descargas
 
-`/admin`, protegido con `ADMIN_PASSWORD`. Muestra por pedido: cliente,
-**dirección completa de envío** (con botón de copiar, lista para pegar en la
-guía), productos, importes, moneda, pasarela y estado del pago. Permite
-marcarlo como enviado con paquetería y número de guía, y dejar notas internas.
+`/descargas` ofrece Zeuz Agent para Windows y Mac con Apple Silicon. `data/downloads.json` fija versión, plataforma, tamaño y SHA-256 de los archivos de GitHub Releases. Las rutas estables son:
 
-**Si `ADMIN_PASSWORD` no está definida el panel queda cerrado, no abierto.**
-Contiene las direcciones de todos los clientes y no puede quedar expuesto
-porque se olvidó una variable de entorno.
+- `/descargas/agent-windows`
+- `/descargas/agent-macos`
+- Las mismas rutas con `/sha256` entregan el archivo de verificación.
 
-## Editar el catálogo
+Ambos binarios de v0.4.1 fueron verificados el 8 de noviembre de 2026: HTTP 200 y `Content-Disposition: attachment`. Sus tamaños y SHA-256 proceden de la API pública de GitHub Releases. Para actualizar, cambiar juntos URL, versión, tamaño y checksum. Los binarios no se incluyen en el repositorio de la tienda.
 
-`data/products.json`. Se relee en cada request, no hace falta reiniciar.
+## Pruebas y vista de diseño
 
-```json
-{
-  "id": "zeuzdnc-touch",
-  "active": true,
-  "name": "Nombre visible",
-  "short": "Subtítulo de una línea",
-  "description": "Descripción completa",
-  "prices": { "MXN": 8900, "USD": 499 },
-  "includes": ["Lo que trae la caja"],
-  "images": ["img/foto-1.jpg", "img/foto-2.jpg"],
-  "badge": "Más vendido",
-  "stock": 10,
-  "category": "dispositivo"
-}
+```sh
+python -m unittest discover -s tests -v
+node --check static/js/cart.js
+node --check static/js/shop.js
+node --check static/js/checkout.js
+node tests/test_checkout_frontend.js
+node tests/test_receipt_frontend.js
+.venv/bin/python design-review/preview.py
 ```
 
-- `active: false` oculta el producto de la tienda sin borrarlo, y su ficha
-  responde 404. Así están hoy el adaptador RS232 y el cable DB9.
-- `images` es una galería: con una sola foto la ficha se ve como siempre, con
-  varias aparecen miniaturas. Agregar fotos es agregar rutas aquí.
-- `external: true` marca los productos que cobra otra tienda (iZEUZ en el App
-  Store): se muestra el precio y el distintivo, pero no se puede añadir al
-  carrito.
+Los dos comandos de pruebas JavaScript ejecutan 26 escenarios de checkout y recibo con simulaciones locales: reintentos, cambios de precio, validación de redirecciones y limpieza segura del carrito. No usan navegador, red, credenciales ni cargos.
 
-La ficha de iZEUZ muestra “Próximamente” mientras `APP_STORE_URL` esté vacía.
-Al llenarla, el distintivo se vuelve un enlace al App Store.
+La vista de diseño corre en http://127.0.0.1:5088/, evita cargar `.env`, desactiva pagos y utiliza una base temporal. No sirve para validar un cobro productivo. `design-review/DESIGN.md` y `VALIDATION.md` documentan el rediseño; la validación de pago en Stripe debe registrarse por separado.
 
-## Pendientes conocidos
+## Rutas y archivos principales
 
-- Precios y tarifas de envío provisionales.
-- Clasificación arancelaria y dictamen de origen T-MEC para exportar a EE. UU.
-- Stripe Tax queda pendiente hasta que haya nexo económico en algún estado.
-  Hoy el IVA se calcula aquí y a Stripe se le mandan importes ya con impuesto.
+- `/`: presentación del producto; `/tienda`: catálogo; `/catalogo`: alias conservado.
+- `/producto/<id>`, `/carrito`, `/checkout`: selección y pago.
+- `products.py`, `data/products.json`: catálogo y cálculos.
+- `app.py`, `orders.py`, `db.py`, `payments_stripe.py`: compra, persistencia y Stripe.
+- `static/js/cart.js`, `shop.js`, `checkout.js`: carrito, cotización y salto al pago.
+- `/admin`: consulta de pedidos, dirección de envío, seguimiento y notas internas.

@@ -6,17 +6,18 @@ DATABASE_URL:
     local     sqlite:///data/shop.db          (valor por defecto)
     Supabase  postgresql://...pooler.supabase.com:6543/postgres
 
-Migrar de uno a otro es cambiar esa variable de entorno. No hay una segunda
-ruta de codigo que pueda desincronizarse.
+PostgreSQL requiere aplicar primero la migración revisada con RLS/permisos.
+El arranque solo comprueba el esquema remoto; no crea tablas de producción.
 
 El dinero se guarda SIEMPRE en centavos (enteros). SQLite no tiene tipo
 decimal y los flotantes acumulan error en sumas de importes; los enteros son
-exactos en las dos bases y son ademas lo que piden Stripe y Mercado Pago.
+exactos en las dos bases y son lo que pide Stripe.
 """
 from __future__ import annotations
 
 import logging
 import os
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -25,6 +26,7 @@ log = logging.getLogger(__name__)
 from sqlalchemy import (
     BigInteger,
     Column,
+    ForeignKey,
     Index,
     Integer,
     MetaData,
@@ -32,6 +34,7 @@ from sqlalchemy import (
     Table,
     Text,
     create_engine,
+    select,
 )
 from sqlalchemy.engine import Engine
 from sqlalchemy.pool import NullPool
@@ -86,6 +89,19 @@ Index("ix_orders_created_at", orders.c.created_at)
 Index("ix_orders_status", orders.c.status)
 Index("ix_orders_gateway_ref", orders.c.gateway_ref)
 
+# Intentos privados de compra. Se crean con el pedido en una transacción;
+# la clave única evita duplicar pedidos al reintentar una petición.
+checkout_attempts = Table(
+    "checkout_attempts", metadata,
+    Column("attempt_id", String(36), primary_key=True),
+    Column("order_id", String(40), ForeignKey("orders.id"), nullable=False, unique=True),
+    Column("payload_hash", String(64), nullable=False),
+    Column("owner_hash", String(64), nullable=False),
+    Column("payment_mode", String(16), nullable=False),
+    Column("created_at", BigInteger, nullable=False),
+    Column("session_expires_at", BigInteger, nullable=False, default=0, server_default="0"),
+)
+
 _engine: Engine | None = None
 
 
@@ -133,7 +149,7 @@ _ready = False
 
 
 def init_db() -> bool:
-    """Crea las tablas que falten. Idempotente.
+    """Crea el esquema local o verifica el esquema previamente migrado en PostgreSQL.
 
     Devuelve si la base quedo utilizable en vez de lanzar. Un despliegue sin
     DATABASE_URL debe seguir sirviendo el catalogo y solo negar el checkout;
@@ -141,7 +157,15 @@ def init_db() -> bool:
     """
     global _ready
     try:
-        metadata.create_all(get_engine())
+        engine = get_engine()
+        if engine.dialect.name == "sqlite":
+            metadata.create_all(engine)
+        else:
+            # Producción se aprovisiona con una migración revisada que incluye
+            # RLS y permisos. Importar Flask nunca debe crear tablas públicas.
+            with engine.connect() as connection:
+                connection.execute(select(orders).limit(0))
+                connection.execute(select(checkout_attempts).limit(0))
         _ready = True
     except Exception:  # noqa: BLE001 - cualquier fallo de conexion o de DDL
         log.exception("Base de datos no disponible: el checkout quedara deshabilitado")
@@ -154,9 +178,21 @@ def is_ready() -> bool:
 
 
 def is_persistent() -> bool:
-    """False cuando estamos sobre el SQLite efimero de /tmp."""
-    return _ready and not database_url().startswith("sqlite:////tmp")
+    """Inspecciona el destino real; ningún SQLite es durable en serverless."""
+    if not _ready:
+        return False
+    engine = get_engine()
+    if engine.dialect.name != "sqlite":
+        return True
+    if any(os.environ.get(name) for name in ("VERCEL", "AWS_LAMBDA_FUNCTION_NAME", "K_SERVICE")):
+        return False
+    database = engine.url.database
+    if not database or database == ":memory:":
+        return False
+    path = Path(database).resolve()
+    temporary_roots = (Path("/tmp").resolve(), Path("/private/tmp").resolve(), Path(tempfile.gettempdir()).resolve())
+    return not any(path == root or root in path.parents for root in temporary_roots)
 
 
 def is_sqlite() -> bool:
-    return database_url().startswith("sqlite")
+    return get_engine().dialect.name == "sqlite"

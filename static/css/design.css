@@ -223,6 +223,9 @@ main:focus { outline: none; }
 .qty input { min-height: 44px; color: var(--text); background: var(--bg-2); }
 .cart-summary { background: var(--bg-2); border: 0; border-radius: 24px; padding: 28px; box-shadow: none; top: 100px; }
 .cart-summary h2 { font-size: 1.5rem; }
+.result__row { gap: 16px; align-items: baseline; }
+.result__row > span { flex: 0 0 auto; }
+.result__row > strong { min-width: 0; overflow-wrap: anywhere; text-align: right; }
 .summary__row { font-size: .9rem; gap: 15px; }
 .summary__row--total { font-size: 1.1rem; }
 .cart-item { background: var(--bg-2); border: 0; border-radius: 20px; }
@@ -415,6 +418,7 @@ main:focus { outline: none; }
   .product-detail__actions .btn { font-size: .88rem; }
   .cart-layout { grid-template-columns: 1fr; gap: 25px; }
   .cart-summary { padding: 25px; }
+  .checkout-page .cart-summary { grid-row: 1; position: static; }
   .cart-item { grid-template-columns: 70px minmax(0,1fr); gap: 16px; padding: 18px; }
   .cart-item__controls { grid-column: 2; flex-direction: row; justify-content: space-between; align-items: center; flex-wrap: wrap; }
   .cart-item__short { font-size: .8rem; }

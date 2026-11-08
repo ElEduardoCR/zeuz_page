@@ -1,14 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Pago no completado · ZEUZ DNC{% endblock %}
-
+{% block title %}Volver a tu selección · ZEUZ DNC{% endblock %}
 {% block content %}
 <section class="container result">
-  <div class="result__icon result__icon--bad">✕</div>
-  <h1>El pago no se completó</h1>
-  <p class="result__lede">No te preocupes, no se hizo ningún cargo. Puedes intentarlo de nuevo con otro método de pago.</p>
-  <div class="result__cta">
-    <a href="{{ url_for('cart_page') }}" class="btn btn--primary">Volver al carrito</a>
-    <a href="{{ url_for('index') }}" class="btn btn--ghost">Ir al inicio</a>
-  </div>
+  <div class="result__icon result__icon--warn" aria-hidden="true">↩</div>
+  <h1>Volvamos a tu selección.</h1>
+  <p class="result__lede">Puedes revisar tu carrito y volver a continuar con Stripe cuando estés listo.</p>
+  <p>Si necesitas aclarar el estado de un pago, escribe a <a href="mailto:{{ support_email }}">{{ support_email }}</a>.</p>
+  <div class="result__cta"><a href="{{ url_for('cart_page') }}" class="btn btn--primary">Volver al carrito</a><a href="{{ url_for('index') }}" class="btn btn--ghost">Ir al inicio</a></div>
 </section>
 {% endblock %}

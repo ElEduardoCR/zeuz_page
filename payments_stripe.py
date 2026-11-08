@@ -1,15 +1,8 @@
-"""Integracion con Stripe (Checkout hospedado).
+"""Stripe Checkout alojado para compras y envíos en México, en MXN.
 
-Corre en paralelo a Mercado Pago: MP sigue atendiendo Mexico y Stripe atiende
-Estados Unidos y, opcionalmente, Mexico tambien.
-
-Sobre impuestos
----------------
-El IVA lo calculamos nosotros y mandamos a Stripe importes ya con impuesto
-incluido. No usamos Stripe Tax todavia porque exige dar de alta registros
-fiscales por jurisdiccion en el dashboard, y para vender a Estados Unidos sin
-nexo economico no hay sales tax que retener. Cuando haya nexo, Stripe Tax se
-activa cambiando los `unit_amount` a netos y agregando `automatic_tax`.
+El servidor calcula el IVA configurado en el catálogo y envía a Stripe
+importes finales con impuesto incluido. Adaptive Pricing permanece apagado
+para conservar la moneda cotizada. Stripe recopila el domicilio de envío.
 """
 from __future__ import annotations
 
@@ -27,7 +20,16 @@ EVENT_EXPIRED = "checkout.session.expired"
 
 
 def is_configured() -> bool:
-    return bool((os.environ.get("STRIPE_SECRET_KEY") or "").strip())
+    return payment_mode() != "unconfigured" and bool((os.environ.get("STRIPE_WEBHOOK_SECRET") or "").strip())
+
+
+def payment_mode() -> str:
+    key = (os.environ.get("STRIPE_SECRET_KEY") or "").strip()
+    if key.startswith(("sk_test_", "rk_test_")):
+        return "test"
+    if key.startswith(("sk_live_", "rk_live_")):
+        return "live"
+    return "unconfigured"
 
 
 def publishable_key() -> str:
@@ -58,12 +60,15 @@ def create_checkout_session(
     success_url: str,
     cancel_url: str,
     customer_email: str,
+    attempt_id: str,
 ) -> Dict[str, Any]:
     """Crea una sesion de Checkout y devuelve {id, url}.
 
     `items` trae importes CON impuesto incluido, en centavos:
         [{"name", "description", "unit_gross_cents", "qty"}]
     """
+    if currency.upper() != "MXN" or region.upper() != "MX":
+        raise RuntimeError("La tienda solo admite compras en México y pesos mexicanos.")
     stripe = _client()
 
     line_items = [
@@ -84,18 +89,18 @@ def create_checkout_session(
 
     payload: Dict[str, Any] = {
         "mode": "payment",
+        "adaptive_pricing": {"enabled": False},
         "line_items": line_items,
         "success_url": success_url,
         "cancel_url": cancel_url,
         "client_reference_id": order_id,
-        "metadata": {"order_id": order_id, "region": region},
+        "metadata": {"order_id": order_id, "region": "MX", "attempt_id": attempt_id},
         "payment_intent_data": {
             "description": "ZEUZ DNC %s" % order_id,
-            "metadata": {"order_id": order_id},
+            "metadata": {"order_id": order_id, "attempt_id": attempt_id},
         },
-        # Que Stripe recoja la direccion tambien: es la que el cliente confirma
-        # al pagar y sirve de contraste contra la que capturo en nuestro form.
-        "shipping_address_collection": {"allowed_countries": [region]},
+        # El domicilio completo se recoge únicamente en Stripe Checkout.
+        "shipping_address_collection": {"allowed_countries": ["MX"]},
     }
     if customer_email:
         payload["customer_email"] = customer_email
@@ -112,8 +117,14 @@ def create_checkout_session(
         ]
 
     log.info("Creando sesion Stripe para orden %s (%s %s)", order_id, currency, region)
-    session = stripe.checkout.Session.create(**payload)
-    return {"id": session.id, "url": session.url}
+    try:
+        session = stripe.checkout.Session.create(
+            **payload, idempotency_key="zeuz-checkout-" + attempt_id,
+        )
+    except stripe.StripeError as exc:
+        log.warning("Stripe no pudo crear Checkout (%s)", type(exc).__name__)
+        raise RuntimeError("No pudimos conectar con el pago. Vuelve a intentarlo con la misma selección.") from exc
+    return {"id": session.id, "url": session.url, "expires_at": session.expires_at}
 
 
 def verify_webhook(payload: bytes, signature: str) -> Optional[Dict[str, Any]]:
@@ -134,21 +145,22 @@ def verify_webhook(payload: bytes, signature: str) -> Optional[Dict[str, Any]]:
         log.error("Falta STRIPE_WEBHOOK_SECRET: no puedo verificar el webhook")
         return None
     try:
-        return stripe.Webhook.construct_event(payload, signature, secret)
+        event = stripe.Webhook.construct_event(payload, signature, secret)
+        return event.to_dict()
     except ValueError:
         log.warning("Webhook Stripe con payload invalido")
         return None
-    except Exception as exc:  # stripe.error.SignatureVerificationError
-        log.warning("Firma de webhook Stripe invalida: %s", exc)
+    except Exception as exc:
+        log.warning("Webhook Stripe no válido (%s)", type(exc).__name__)
         return None
 
 
 def get_session(session_id: str) -> Optional[Dict[str, Any]]:
-    stripe = _client()
     try:
-        return stripe.checkout.Session.retrieve(session_id)
+        stripe = _client()
+        return stripe.checkout.Session.retrieve(session_id).to_dict()
     except Exception as exc:
-        log.warning("No se pudo leer la sesion Stripe %s: %s", session_id, exc)
+        log.warning("No se pudo consultar la sesión Stripe (%s)", type(exc).__name__)
         return None
 
 

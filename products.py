@@ -1,16 +1,8 @@
-"""Catalogo de productos y precios por region.
+"""Catálogo editable de la tienda oficial: México, pesos mexicanos y Stripe.
 
-Lee de data/products.json y resuelve precios en la moneda de cada region.
-
-Modelo de precios
------------------
-`prices[<moneda>]` guarda SIEMPRE el precio NETO (sin impuesto). El impuesto
-lo aporta la region: Mexico 16% de IVA, Estados Unidos 0% (la exportacion es
-tasa 0 y no retenemos sales tax mientras no haya nexo).
-
-Los productos `external` (iZEUZ, que se cobra en el App Store) son la
-excepcion: su precio ya viene con impuesto incluido porque lo fija Apple, asi
-que no se les aplica la tasa de la region.
+Lee data/products.json en cada petición. Los precios MXN son netos; se
+conserva la tasa de IVA configurada para México. iZEUZ es un producto externo:
+su precio de referencia ya es final y su compra permanece en el App Store.
 """
 from __future__ import annotations
 
@@ -25,7 +17,7 @@ PRODUCTS_FILE = DATA_DIR / "products.json"
 _LOCK = threading.RLock()
 
 # Monedas que manejamos, con su exponente de unidad minima (centavos).
-_MINOR_UNITS = {"MXN": 2, "USD": 2}
+_MINOR_UNITS = {"MXN": 2}
 
 
 def _load() -> Dict[str, Any]:
@@ -96,7 +88,9 @@ def price_for(product: Dict[str, Any], region: Dict[str, Any]) -> Dict[str, Any]
             "available": False,
         }
 
-    net = Decimal(str(raw))
+    # Cada unidad se normaliza a centavos antes de calcular IVA y totales.
+    # Así qty × precio de Stripe coincide con el importe guardado del pedido.
+    net = _q(Decimal(str(raw)))
     # Los productos externos traen precio final fijado por la tienda de Apple.
     rate = Decimal("0") if product.get("external") else Decimal(str(region.get("tax_rate", 0)))
     tax = _q(net * rate)

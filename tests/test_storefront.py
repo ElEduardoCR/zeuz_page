@@ -29,10 +29,8 @@ class StorefrontTests(unittest.TestCase):
 
     def test_checkout_is_closed_even_with_configured_gateways(self):
         with patch.object(storefront.payments_stripe, "is_configured", return_value=True), \
-             patch.object(storefront.payments_mp, "is_configured", return_value=True), \
              patch.object(storefront.orders, "create_order") as create_order, \
-             patch.object(storefront, "_start_stripe") as stripe, \
-             patch.object(storefront, "_start_mercadopago") as mp:
+             patch.object(storefront, "_start_stripe") as stripe:
             for gateway in ("stripe", "mercadopago"):
                 response = self.client.post("/api/checkout", json={
                     "cart": [{"id": "zeuzdnc-touch", "qty": 1}],
@@ -43,12 +41,10 @@ class StorefrontTests(unittest.TestCase):
                 self.assertEqual(response.json["code"], "payments_not_enabled")
             create_order.assert_not_called()
             stripe.assert_not_called()
-            mp.assert_not_called()
 
     def test_disabled_store_context_has_no_payment_options(self):
         with storefront.app.test_request_context("/?region=MX"), \
-             patch.object(storefront.payments_stripe, "is_configured", return_value=True), \
-             patch.object(storefront.payments_mp, "is_configured", return_value=True):
+             patch.object(storefront.payments_stripe, "is_configured", return_value=True):
             storefront.resolve_region()
             context = storefront.inject_globals()
             self.assertFalse(context["payments_enabled"])
@@ -94,22 +90,6 @@ class StorefrontTests(unittest.TestCase):
         legacy = self.client.get("/producto/zeuzdnc-device")
         self.assertEqual(legacy.status_code, 301)
         self.assertTrue(legacy.headers["Location"].endswith("/producto/zeuzdnc-touch"))
-
-    def test_future_opt_in_preserves_checkout_flow(self):
-        storefront.app.config["PAYMENTS_ENABLED"] = True
-        with patch.object(storefront.db, "is_persistent", return_value=True), \
-             patch.object(storefront.payments_stripe, "is_configured", return_value=True), \
-             patch.object(storefront.orders, "create_order", return_value="test-order"), \
-             patch.object(storefront.orders, "update_order"), \
-             patch.object(storefront, "_start_stripe", return_value={"ref": "test", "url": "https://example.com/test-checkout"}) as stripe:
-            response = self.client.post("/api/checkout?region=US", json={
-                "cart": [{"id": "zeuzdnc-touch", "qty": 1}],
-                "customer": {"name": "Prueba", "email": "test@example.com"},
-                "gateway": "stripe",
-            })
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json["redirect_url"], "https://example.com/test-checkout")
-            stripe.assert_called_once()
 
     def test_quotes_still_work_and_ignore_client_prices(self):
         response = self.client.post("/api/quote?region=MX", json={

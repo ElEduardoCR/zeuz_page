@@ -16,11 +16,17 @@ from decimal import ROUND_HALF_UP, Decimal
 from typing import Any, Dict, List, Optional
 
 from sqlalchemy import desc, select
+from sqlalchemy.exc import IntegrityError
 
 import db
 
 # Estados que consideramos "el dinero ya entro".
 PAID_STATUSES = ("paid", "shipped")
+PROTECTED_STATUSES = ("paid", "shipped", "refunded")
+
+
+class AttemptConflict(ValueError):
+    pass
 
 
 def _now() -> int:
@@ -30,7 +36,7 @@ def _now() -> int:
 def _new_id() -> str:
     # Corto, legible y unico. Se lo mandamos a la pasarela como referencia
     # externa, asi que conviene que se lea bien en un dashboard.
-    return "ZEUZ-%d-%s" % (_now(), uuid.uuid4().hex[:6].upper())
+    return "ZEUZ-" + uuid.uuid4().hex.upper()
 
 
 def _cents(value: Any) -> int:
@@ -68,6 +74,7 @@ def create_order(
     tax: Decimal,
     shipping: Decimal,
     total: Decimal,
+    attempt: Optional[Dict[str, str]] = None,
 ) -> str:
     """Guarda una orden pendiente antes de mandar al cliente a la pasarela."""
     order_id = _new_id()
@@ -104,9 +111,70 @@ def create_order(
         "shipped_at": None,
         "admin_notes": "",
     }
-    with db.get_engine().begin() as conn:
-        conn.execute(db.orders.insert().values(**payload))
+    try:
+        with db.get_engine().begin() as conn:
+            conn.execute(db.orders.insert().values(**payload))
+            if attempt:
+                conn.execute(db.checkout_attempts.insert().values(
+                    attempt_id=attempt["attempt_id"], order_id=order_id,
+                    payload_hash=attempt["payload_hash"], owner_hash=attempt["owner_hash"],
+                    payment_mode=attempt["payment_mode"], created_at=now,
+                    session_expires_at=0,
+                ))
+    except IntegrityError:
+        if not attempt:
+            raise
+        existing = get_attempt(attempt["attempt_id"])
+        if not existing:
+            raise
+        if any(existing[key] != attempt[key] for key in ("payload_hash", "owner_hash", "payment_mode")):
+            raise AttemptConflict("El intento de compra pertenece a otra selección.")
+        return existing["order_id"]
     return order_id
+
+
+def get_attempt(attempt_id: str) -> Optional[Dict[str, Any]]:
+    with db.get_engine().connect() as conn:
+        row = conn.execute(select(db.checkout_attempts).where(
+            db.checkout_attempts.c.attempt_id == attempt_id)).mappings().first()
+    return dict(row) if row else None
+
+
+def get_order_attempt(order_id: str) -> Optional[Dict[str, Any]]:
+    with db.get_engine().connect() as conn:
+        row = conn.execute(select(db.checkout_attempts).where(
+            db.checkout_attempts.c.order_id == order_id)).mappings().first()
+    return dict(row) if row else None
+
+
+def attach_session(order_id: str, session_id: str, url: str, expires_at: int) -> bool:
+    """Asocia una sesión una vez; un webhook puede haber llegado primero."""
+    with db.get_engine().begin() as conn:
+        result = conn.execute(db.orders.update().where(
+            db.orders.c.id == order_id,
+            db.orders.c.gateway_ref.in_(("", session_id)),
+        ).values(gateway_ref=session_id, gateway_url=url, updated_at=_now()))
+        if result.rowcount != 1:
+            return False
+        conn.execute(db.checkout_attempts.update().where(
+            db.checkout_attempts.c.order_id == order_id,
+        ).values(session_expires_at=expires_at))
+        return True
+
+
+def transition_payment(order_id: str, session_id: str, status: str, **fields: Any) -> bool:
+    """Una transición SQL condicional: reintentos y eventos tardíos no degradan pagos."""
+    allowed = {"gateway_payment_id", "gateway_status", "ship_line1", "ship_line2", "ship_city", "ship_state", "ship_zip", "ship_country"}
+    values = {key: value for key, value in fields.items() if key in allowed}
+    values.update(status=status, gateway_ref=session_id, updated_at=_now())
+    predicates = [db.orders.c.id == order_id, db.orders.c.gateway == "stripe",
+                  db.orders.c.gateway_ref.in_(("", session_id)),
+                  db.orders.c.status.not_in(PROTECTED_STATUSES)]
+    if status != "paid":
+        predicates.append(db.orders.c.status.in_(("pending", "pending_payment")))
+    with db.get_engine().begin() as conn:
+        result = conn.execute(db.orders.update().where(*predicates).values(**values))
+    return result.rowcount == 1
 
 
 def update_order(order_id: str, **fields: Any) -> None:

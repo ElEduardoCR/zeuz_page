@@ -5,6 +5,11 @@
   const catalog = Object.fromEntries((window.__CATALOG__ || []).map((product) => [product.id, product]));
   const totalIds = ['cart-subtotal', 'cart-shipping', 'cart-total', 'checkout-subtotal', 'checkout-tax', 'checkout-shipping', 'checkout-total'];
   let quoteTimer, quoteController, quoteVersion = 0, toastTimer, synchronizing = false;
+  let quoteSnapshot = { state: 'idle', quote: null, cartKey: '' };
+  function cartKey(items) {
+    return JSON.stringify(items.map(item => ({ id: item.id, qty: item.qty }))
+      .sort((left, right) => left.id.localeCompare(right.id)));
+  }
 
   function fmt(amount) {
     const value = Number(amount);
@@ -14,7 +19,6 @@
       maximumFractionDigits: 2,
     }) + ' ' + store.currency;
   }
-  function grossOf(product) { return product && product.price ? Number(product.price.gross) : NaN; }
   function escapeHtml(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, (char) => ({
       '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
@@ -61,7 +65,8 @@
     setTimeout(() => { btn.textContent = original; delete btn.dataset._busy; }, 900);
   });
 
-  function quoteState(state, message) {
+  function quoteState(state, message, quote = null, cart = []) {
+    quoteSnapshot = { state, quote, cartKey: cartKey(cart) };
     document.querySelectorAll('.cart-summary').forEach((summary) => {
       summary.setAttribute('aria-busy', state === 'pending' ? 'true' : 'false');
       let status = summary.querySelector('.quote-status');
@@ -89,8 +94,13 @@
       }
     });
     const submit = document.getElementById('submit-btn');
-    if (submit) submit.disabled = state !== 'ready' || !store.payments_enabled || !(store.gateways || []).length;
-    if (state !== 'ready') totalIds.forEach((id) => paint(id, '—'));
+    if (submit) submit.disabled = state !== 'ready' || submit.dataset.busy === 'true'
+      || !store.payments_enabled || !(store.gateways || []).includes('stripe');
+    if (state !== 'ready') {
+      totalIds.forEach((id) => paint(id, '—'));
+      document.querySelectorAll('[data-line-price]').forEach(el => { el.textContent = '—'; });
+    }
+    window.dispatchEvent(new CustomEvent('store:quote', { detail: quoteSnapshot }));
   }
   function cancelQuote() {
     ++quoteVersion;
@@ -108,20 +118,21 @@
       quoteController = controller;
       const timeout = setTimeout(() => controller.abort(), 12000);
       try {
-        const region = store.region ? '?region=' + encodeURIComponent(store.region) : '';
-        const response = await fetch('/api/quote' + region, {
+        const response = await fetch('/api/quote', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ cart }), signal: controller.signal,
         });
         const data = await response.json();
         if (version !== quoteVersion) return;
         const fields = ['subtotal_gross', 'subtotal_net', 'tax', 'shipping', 'total'];
-        if (!response.ok || !data.ok || data.currency !== store.currency || !data.totals
+        if (!response.ok || !data.ok || data.currency !== 'MXN' || !data.totals
+            || typeof data.quote_token !== 'string' || !/^[a-f0-9]{64}$/.test(data.quote_token)
+            || !Array.isArray(data.items) || cartKey(data.items) !== cartKey(cart)
+            || !data.items.every(item => Number.isSafeInteger(item.line_gross_cents) && item.line_gross_cents >= 0)
             || !fields.every((key) => typeof data.totals[key] === 'number'
               && Number.isFinite(data.totals[key]) && data.totals[key] >= 0)) {
-          throw new Error('quote_unavailable');
+          throw Object.assign(new Error('quote_unavailable'), { publicMessage: typeof data.error === 'string' ? data.error : null });
         }
-        quoteState('ready', '');
         const totals = data.totals;
         paint('cart-subtotal', fmt(totals.subtotal_gross));
         paint('cart-shipping', totals.shipping > 0 ? fmt(totals.shipping) : 'Gratis');
@@ -130,11 +141,21 @@
         paint('checkout-tax', fmt(totals.tax));
         paint('checkout-shipping', totals.shipping > 0 ? fmt(totals.shipping) : 'Gratis');
         paint('checkout-total', fmt(totals.total));
-      } catch (_) {
-        if (version === quoteVersion) quoteState('error', 'No pudimos calcular el total. Revisa tu conexión y vuelve a intentarlo.');
+        const lines = new Map(data.items.map(item => [item.id, item.line_gross_cents]));
+        document.querySelectorAll('[data-line-price]').forEach(el => {
+          const cents = lines.get(el.dataset.linePrice);
+          el.textContent = Number.isSafeInteger(cents) ? fmt(cents / 100) : '—';
+        });
+        quoteState('ready', '', data, cart);
+      } catch (error) {
+        if (version === quoteVersion) quoteState('error', error.name === 'AbortError'
+          ? 'La consulta tardó demasiado. Vuelve a calcular el total.'
+          : (error.publicMessage || 'No pudimos calcular el total. Revisa tu conexión y vuelve a intentarlo.'));
       } finally { clearTimeout(timeout); }
     }, 100);
   }
+
+  window.StoreQuote = Object.freeze({ get: () => quoteSnapshot, refresh: fetchQuote, cartKey });
 
   function availableItems() {
     const items = Cart.get();
@@ -177,7 +198,7 @@
           </div>
         </div>
         <div class="cart-item__controls">
-          <div class="cart-item__price">${fmt(grossOf(product) * item.qty)}</div>
+          <div class="cart-item__price" data-line-price="${escapeHtml(item.id)}">—</div>
           <button type="button" class="cart-item__remove" data-action="remove" data-id="${escapeHtml(item.id)}" aria-label="Quitar ${escapeHtml(product.name)}">Quitar</button>
         </div>`;
       root.appendChild(row);
@@ -227,7 +248,7 @@
       row.className = 'checkout-item';
       row.innerHTML = `<span class="checkout-item__name">${escapeHtml(product.name)}</span>
         <span class="checkout-item__qty">× ${item.qty}</span>
-        <span class="checkout-item__price">${fmt(grossOf(product) * item.qty)}</span>`;
+        <span class="checkout-item__price" data-line-price="${escapeHtml(item.id)}">—</span>`;
       root.appendChild(row);
     }
     fetchQuote();

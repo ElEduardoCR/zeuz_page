@@ -30,16 +30,6 @@
         <a href="{{ url_for('index') }}#contacto">Soporte</a>
       </nav>
       <div class="topbar__actions">
-        <div class="region-switch" aria-label="Región de envío">
-          {% for code, region in regions.items() %}
-            <a href="{{ url_for('set_region', code=code, next=request.path) }}"
-               class="region-switch__opt{% if code == store.region %} is-active{% endif %}"
-               {% if code == store.region %}aria-current="true"{% endif %}
-               title="Precios en {{ region.currency }} · envío a {{ region.label }}">
-              <span class="region-switch__code">{{ region.currency }}</span>
-            </a>
-          {% endfor %}
-        </div>
         <a href="{{ url_for('cart_page') }}" class="cart-btn" aria-label="Carrito">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M3 4h2l2 12h11l2-8H6" />
@@ -58,12 +48,7 @@
           <a href="{{ url_for('downloads_page') }}">Descargas</a>
           <a href="{{ url_for('index') }}#como-funciona">Cómo funciona</a>
           <a href="{{ url_for('index') }}#contacto">Soporte y contacto</a>
-          <div class="mobile-menu__regions">
-            <span>Región de envío</span>
-            {% for code, region in regions.items() %}
-              <a href="{{ url_for('set_region', code=code, next=request.path) }}" {% if code == store.region %}aria-current="true"{% endif %}>{{ region.label }} · {{ region.currency }}</a>
-            {% endfor %}
-          </div>
+          <div class="mobile-menu__regions"><span>Envíos a México · Precios en MXN</span></div>
         </nav>
       </details>
     </div>
@@ -106,8 +91,7 @@
   <div class="shop-toast" id="shop-toast" role="status" aria-live="polite" hidden></div>
 
   <script>
-    // Config de la region activa para que el JS pinte precios en la moneda
-    // correcta sin volver a pedirla al servidor.
+    // Configuración pública de la tienda en México.
     window.__STORE__ = {{ store|tojson }};
   </script>
   {% block scripts %}{% endblock %}
@@ -115,5 +99,6 @@
   <script src="{{ url_for('static', filename='js/motion.js') }}"></script>
   <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
   <script src="{{ url_for('static', filename='js/shop.js') }}"></script>
+  {% block page_scripts %}{% endblock %}
 </body>
 </html>

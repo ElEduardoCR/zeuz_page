@@ -94,11 +94,9 @@
         <li>📡 Conexión inalámbrica con ZEUZ DNC</li>
         <li>↗ Descarga y actualizaciones desde el App Store</li>
         {% else %}
-        <li>Envío de referencia a {{ store.region_label }}: {{ store.shipping_flat|money(store.currency) }}</li>
+        <li>{{ "Envío" if payments_enabled else "Envío de referencia" }} a México: {{ store.shipping_flat|money(store.currency) }}</li>
         <li>Soporte de puesta en marcha</li>
-        {% if store.customs_notice %}
-        <li>🛃 Los aranceles de importación los cobra la paquetería al entregar</li>
-        {% endif %}
+
         {% endif %}
       </ul>
     </div>

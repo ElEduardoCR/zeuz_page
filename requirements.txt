@@ -2,9 +2,8 @@ flask>=3.0.0
 python-dotenv>=1.0.0
 requests>=2.31.0
 
-# Pasarelas
-mercadopago>=2.2.0
-stripe>=11.0.0
+# Stripe Checkout alojado
+stripe==15.4.0
 
 # Persistencia. psycopg2 solo se usa cuando DATABASE_URL apunta a Postgres;
 # en local con SQLite queda instalado pero inactivo.

@@ -1,40 +1,39 @@
 {% extends "base.html" %}
-{% block title %}Pago exitoso · ZEUZ DNC{% endblock %}
-
+{% block title %}Estado de tu compra · ZEUZ DNC{% endblock %}
 {% block content %}
 <section class="container result">
-  <div class="result__icon result__icon--ok">✓</div>
-  <h1>¡Pago recibido!</h1>
-  <p class="result__lede">Gracias por tu compra. Te enviamos un email con los detalles.</p>
+  {% if order and order.payment_mode == 'test' %}<div class="store-notice" role="status"><span><strong>Compra de prueba.</strong> No corresponde a un cargo real.</span></div>{% endif %}
+  {% if order and order.is_paid %}
+  <div class="result__icon result__icon--ok" aria-hidden="true">✓</div>
+  <h1>Pago confirmado.</h1>
+  <p class="result__lede">Stripe confirmó el pago de tu pedido. Gracias por elegir ZEUZ.</p>
+  {% elif order and order.status in ['pending', 'pending_payment'] %}
+  <div class="result__icon result__icon--warn" aria-hidden="true">…</div>
+  <h1>Estamos confirmando tu pago.</h1>
+  <p class="result__lede">Aún no tenemos la confirmación de Stripe. Puedes actualizar esta página para consultar el estado.</p>
+  {% elif order %}
+  <div class="result__icon result__icon--warn" aria-hidden="true">…</div>
+  <h1>El pago no está confirmado.</h1>
+  <p class="result__lede">Revisa tu selección o contacta con nosotros si necesitas ayuda con este pedido.</p>
+  {% else %}
+  <h1>Consulta tu compra.</h1>
+  <p class="result__lede">No pudimos recuperar un pedido de este navegador. Si realizaste una compra, escríbenos para revisar su estado.</p>
+  {% endif %}
+  {% if order %}
   <div class="result__box">
-    <div class="result__row"><span>Orden</span><strong id="order-id">{% if order_id %}{{ order_id }}{% else %}—{% endif %}</strong></div>
-    {% if order %}
+    <div class="result__row"><span>Pedido</span><strong>{{ order.id or order_id }}</strong></div>
     <div class="result__row"><span>Total</span><strong>{{ order.total|money(order.currency) }}</strong></div>
-    <div class="result__row"><span>Estado</span><strong>
-      {% if order.is_paid %}Pago confirmado · preparando envío
-      {% elif order.status == 'pending_payment' %}Esperando confirmación del pago
-      {% else %}Procesando{% endif %}
-    </strong></div>
-    {% else %}
-    <div class="result__row"><span>Estado</span><strong>Procesando envío</strong></div>
-    {% endif %}
+    <div class="result__row"><span>Estado</span><strong>{{ "Pago confirmado" if order.is_paid else "Pago no confirmado" }}</strong></div>
   </div>
-  <p>Tu pedido se está preparando. Te avisaremos cuando sea enviado con el número de rastreo.</p>
-  <div class="result__cta">
-    <a href="{{ url_for('catalog_page') }}" class="btn btn--ghost">Seguir comprando</a>
-    <a href="{{ url_for('index') }}" class="btn btn--primary">Volver al inicio</a>
-  </div>
+  {% endif %}
+  <p>Para recibir ayuda, escribe a <a href="mailto:{{ support_email }}">{{ support_email }}</a>.</p>
+  <div class="result__cta"><a href="{{ url_for('catalog_page') }}" class="btn btn--ghost">Ver la tienda</a><a href="{{ url_for('index') }}" class="btn btn--primary">Volver al inicio</a></div>
 </section>
 {% endblock %}
 
-{% block scripts %}
-<script>
-  (function() {
-    const orderEl = document.getElementById('order-id');
-    if (!orderEl || orderEl.textContent.trim() !== '—') return;
-    // Si no vino por query string, intenta con el id que guardamos en sessionStorage
-    const id = sessionStorage.getItem('last_order_id');
-    if (id) orderEl.textContent = id;
-  })();
-</script>
+{% block page_scripts %}
+{% if order and order.is_paid %}
+<script id="confirmed-order" type="application/json">{{ {"id": order.id, "paid": true}|tojson }}</script>
+<script src="{{ url_for('static', filename='js/receipt.js') }}"></script>
+{% endif %}
 {% endblock %}
