@@ -7,7 +7,7 @@ stripe==15.4.0
 
 # Persistencia. psycopg2 solo se usa cuando DATABASE_URL apunta a Postgres;
 # en local con SQLite queda instalado pero inactivo.
-SQLAlchemy>=2.0.0
+SQLAlchemy>=2.0.0,<2.1
 psycopg2-binary>=2.9.0
 
 gunicorn>=22.0.0

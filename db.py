@@ -107,10 +107,11 @@ _engine: Engine | None = None
 
 def database_url() -> str:
     url = (os.environ.get("DATABASE_URL") or "").strip() or DEFAULT_SQLITE
-    # Varios proveedores entregan el esquema viejo `postgres://`, que
-    # SQLAlchemy 2 ya no reconoce.
-    if url.startswith("postgres://"):
-        url = "postgresql://" + url[len("postgres://"):]
+    # Seleccionar el driver instalado explícitamente. El driver por defecto
+    # de SQLAlchemy puede cambiar; conservar sin reinterpretar el resto de URL.
+    for scheme in ("postgres://", "postgresql://"):
+        if url.startswith(scheme):
+            return "postgresql+psycopg2://" + url[len(scheme):]
     return url
 
 

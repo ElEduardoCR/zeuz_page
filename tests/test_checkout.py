@@ -315,6 +315,19 @@ class StripePayloadTests(unittest.TestCase):
 
 
 class PersistenceTests(unittest.TestCase):
+    def test_postgres_urls_select_installed_driver_without_changing_connection_parts(self):
+        suffix = "fixture_user:p%40ss%2Fword@db.example.invalid:6543/fixture_db?sslmode=require&connect_timeout=5"
+        for scheme, expected in (
+            ("postgres://", "postgresql+psycopg2://"),
+            ("postgresql://", "postgresql+psycopg2://"),
+            ("postgresql+psycopg2://", "postgresql+psycopg2://"),
+            ("postgresql+psycopg://", "postgresql+psycopg://"),
+        ):
+            with self.subTest(scheme=scheme), patch.dict(os.environ, {"DATABASE_URL": scheme + suffix}):
+                self.assertEqual(storefront.db.database_url(), expected + suffix)
+        with patch.dict(os.environ, {"DATABASE_URL": "sqlite:///:memory:"}):
+            self.assertEqual(storefront.db.database_url(), "sqlite:///:memory:")
+
     def test_real_engine_is_checked_instead_of_configured_url(self):
         original, ready = storefront.db._engine, storefront.db._ready
         try:
